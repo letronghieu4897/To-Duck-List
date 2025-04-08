@@ -1,4 +1,4 @@
-# Taskily - Chrome Extension Task Manager
+# To-Duck List - Chrome Extension Task Manager
 
 Taskily is a lightweight and user-friendly Chrome Extension that helps you manage your tasks directly from your browser. With a clean and intuitive interface, it allows you to create, organize, and track your tasks efficiently.
 
