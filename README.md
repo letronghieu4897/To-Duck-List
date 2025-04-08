@@ -1,6 +1,6 @@
 # To-Duck List - Chrome Extension Task Manager
 
-Taskily is a lightweight and user-friendly Chrome Extension that helps you manage your tasks directly from your browser. With a clean and intuitive interface, it allows you to create, organize, and track your tasks efficiently.
+To-Duck List is a lightweight and user-friendly Chrome Extension that helps you manage your tasks directly from your browser. With a clean and intuitive interface, it allows you to create, organize, and track your tasks efficiently.
 
 ## Features
 
@@ -17,7 +17,6 @@ Taskily is a lightweight and user-friendly Chrome Extension that helps you manag
 1. Clone this repository:
    ```bash
    git clone https://github.com/letronghieu4897/To-Duck-List.git
-   cd taskily
    ```
 
 2. Open Chrome and navigate to `chrome://extensions/`
@@ -36,12 +35,12 @@ Taskily is a lightweight and user-friendly Chrome Extension that helps you manag
 1. Make your changes to the source files
 2. Reload the extension in Chrome:
    - Go to `chrome://extensions/`
-   - Find Taskily
+   - Find To-Duck-List
    - Click the refresh icon
 
 ### Project Structure
 ```
-taskily/
+To-Duck-List/
 ├── manifest.json       # Extension configuration
 ├── popup.html          # Main extension popup
 ├── js/
@@ -54,7 +53,7 @@ taskily/
 
 ## Usage
 
-1. Click the Taskily icon in your Chrome toolbar
+1. Click the To-Duck-List icon in your Chrome toolbar
 2. Add a new task:
    - Click the "+" button
    - Enter task title and description
