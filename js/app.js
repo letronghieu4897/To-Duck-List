@@ -7,6 +7,7 @@ const formTitle = document.getElementById('formTitle');
 const taskIdInput = document.getElementById('taskId');
 const titleInput = document.getElementById('title');
 const descriptionInput = document.getElementById('description');
+const deadlineInput = document.getElementById('deadline');
 const creationDateContainer = document.getElementById('creationDateContainer');
 const creationDate = document.getElementById('creationDate');
 const completionDateContainer = document.getElementById('completionDateContainer');
@@ -36,6 +37,7 @@ function init() {
           time: '09:30',
           completed: false,
           createdAt: new Date().toISOString(),
+          deadline: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(), // 1 day left (urgent - red)
           comments: [],
           order: 0
         },
@@ -46,37 +48,40 @@ function init() {
           time: '14:30',
           completed: false,
           createdAt: new Date().toISOString(),
+          deadline: new Date(new Date().setHours(new Date().getHours() - 2)).toISOString(), // 2 hours ago (overdue - red)
           comments: [],
           order: 1
         },
         {
           id: 3,
           title: 'Status Checking',
-          description: 'Review project progress',
+          description: 'Review project progress (no deadline)',
           time: '16:30',
           completed: false,
           createdAt: new Date().toISOString(),
+          // No deadline set (will show as green)
           comments: [],
           order: 2
         },
         {
           id: 4,
-          title: 'Finish Work',
-          description: 'Complete daily tasks',
-          time: '18:30',
+          title: 'Urgent Meeting',
+          description: 'Prepare for urgent meeting (due today)',
+          time: '10:30',
           completed: false,
           createdAt: new Date().toISOString(),
+          deadline: new Date(new Date().setHours(new Date().getHours() + 3)).toISOString(), // 3 hours left
           comments: [],
           order: 3
         },
         {
           id: 5,
-          title: 'Morning',
-          description: 'Morning routine tasks',
-          time: '08:30',
-          completed: true,
+          title: 'Finish Work',
+          description: 'Complete daily tasks',
+          time: '18:30',
+          completed: false,
           createdAt: new Date().toISOString(),
-          completedAt: new Date().toISOString(),
+          deadline: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString(), // 14 days left (normal - blue)
           comments: [],
           order: 4
         }
@@ -96,13 +101,31 @@ function init() {
 }
 
 function sortTasksByCompletion() {
+  // First sort by order
   tasks.sort((a, b) => (a.order || 0) - (b.order || 0));
   
+  // Then separate completed from incomplete
   const incompleteTasks = tasks.filter(task => !task.completed);
   const completedTasks = tasks.filter(task => task.completed);
   
+  // Sort incomplete tasks by deadline (if exists)
+  incompleteTasks.sort((a, b) => {
+    // If both have deadlines, sort by deadline (earlier first)
+    if (a.deadline && b.deadline) {
+      return new Date(a.deadline) - new Date(b.deadline);
+    }
+    // If only a has deadline, a comes first
+    if (a.deadline) return -1;
+    // If only b has deadline, b comes first
+    if (b.deadline) return 1;
+    // If neither has deadline, keep original order
+    return 0;
+  });
+  
+  // Combine them back with completed at the bottom
   tasks = [...incompleteTasks, ...completedTasks];
   
+  // Update order based on new positions
   tasks.forEach((task, index) => {
     task.order = index;
   });
@@ -155,8 +178,50 @@ function renderTasks() {
 
 function renderTaskItems(tasksArray) {
   tasksArray.forEach((task, index) => {
+    // Check task deadline status
+    let isOverdue = false;
+    let daysRemaining = null;
+    let hoursRemaining = null;
+    let deadlineClass = '';
+    
+    if (task.deadline && !task.completed) {
+      const deadlineDate = new Date(task.deadline);
+      const currentDate = new Date();
+      const isOverdue = deadlineDate < currentDate;
+      
+      // Set to beginning of day for accurate day calculation
+      const currentDateDay = new Date(currentDate);
+      currentDateDay.setHours(0, 0, 0, 0);
+      const deadlineDateDay = new Date(deadlineDate);
+      deadlineDateDay.setHours(0, 0, 0, 0);
+      
+      // Calculate days remaining
+      const timeDiffDays = deadlineDateDay.getTime() - currentDateDay.getTime();
+      daysRemaining = Math.ceil(timeDiffDays / (1000 * 3600 * 24));
+      
+      // Calculate hours remaining for tasks due today
+      if (daysRemaining <= 0 && !isOverdue) {
+        const timeDiffHours = deadlineDate.getTime() - currentDate.getTime();
+        hoursRemaining = Math.ceil(timeDiffHours / (1000 * 3600));
+      }
+      
+      if (isOverdue) {
+        deadlineClass = 'overdue';
+      } else if (daysRemaining <= 1) {
+        deadlineClass = 'urgent';
+      } else if (daysRemaining <= 7) {
+        deadlineClass = 'warning';
+      } else {
+        deadlineClass = 'normal';
+      }
+    } else if (!task.completed) {
+      // No deadline set and not completed
+      deadlineClass = 'no-deadline';
+    }
+
     const taskItem = document.createElement('li');
-    taskItem.className = task.completed ? 'task-item completed' : 'task-item';
+    taskItem.className = task.completed ? 'task-item completed' : 
+                        `task-item ${deadlineClass}`;
     taskItem.dataset.id = task.id;
     taskItem.dataset.index = index;
     
@@ -192,6 +257,41 @@ function renderTaskItems(tasksArray) {
     
     const taskDates = document.createElement('div');
     taskDates.className = 'task-dates';
+    
+    // Add deadline if it exists
+    if (task.deadline) {
+      const deadlineObj = new Date(task.deadline);
+      const now = new Date();
+      const isOverdue = !task.completed && deadlineObj < now;
+      
+      const formattedDeadline = formatDateShort(deadlineObj);
+      const deadlineElement = document.createElement('div');
+      deadlineElement.className = `task-date deadline ${isOverdue ? 'overdue' : ''}`;
+      
+      // Add time remaining info if not completed and not overdue
+      let deadlineText = formattedDeadline;
+      if (!task.completed && !isOverdue) {
+        if (hoursRemaining !== null && hoursRemaining <= 24) {
+          // Show hours remaining when less than a day is left
+          const hourText = hoursRemaining === 1 ? 'hour' : 'hours';
+          deadlineText += ` <span class="hours-remaining">${hoursRemaining} ${hourText} left</span>`;
+        } else if (daysRemaining !== null) {
+          // Otherwise show days remaining
+          const dayText = daysRemaining === 1 ? 'day' : 'days';
+          
+          // Apply different styles based on urgency
+          let daysClass = 'days-remaining';
+          if (daysRemaining > 7) {
+            daysClass += ' normal';
+          }
+          
+          deadlineText += ` <span class="${daysClass}">${daysRemaining} ${dayText} left</span>`;
+        }
+      }
+      
+      deadlineElement.innerHTML = `<i class="fas fa-clock"></i> ${deadlineText}`;
+      taskDates.appendChild(deadlineElement);
+    }
     
     const createdDateObj = new Date(task.createdAt);
     const formattedCreationDate = formatDateShort(createdDateObj);
@@ -355,6 +455,7 @@ function openAddTaskModal() {
   taskIdInput.value = '';
   titleInput.value = '';
   descriptionInput.value = '';
+  deadlineInput.value = '';
   creationDateContainer.style.display = 'none';
   completionDateContainer.style.display = 'none';
   taskFormModal.style.display = 'block';
@@ -369,6 +470,16 @@ function openEditTaskModal(taskId) {
     taskIdInput.value = taskId;
     titleInput.value = task.title;
     descriptionInput.value = task.description || '';
+    
+    if (task.deadline) {
+      const deadlineDate = new Date(task.deadline);
+      const localDeadline = new Date(deadlineDate.getTime() - (deadlineDate.getTimezoneOffset() * 60000))
+        .toISOString()
+        .slice(0, 16);
+      deadlineInput.value = localDeadline;
+    } else {
+      deadlineInput.value = '';
+    }
     
     document.getElementById('saveTaskBtn').textContent = 'Update Task';
     
@@ -402,6 +513,7 @@ function handleSaveTask(event) {
   const taskId = taskIdInput.value ? parseInt(taskIdInput.value) : null;
   const title = titleInput.value.trim();
   const description = descriptionInput.value.trim();
+  const deadline = deadlineInput.value ? new Date(deadlineInput.value).toISOString() : null;
   
   if (!title) return;
   
@@ -410,6 +522,7 @@ function handleSaveTask(event) {
     if (taskIndex !== -1) {
       tasks[taskIndex].title = title;
       tasks[taskIndex].description = description;
+      tasks[taskIndex].deadline = deadline;
       showToast(`Task "${title}" updated!`, 'info', 'fa-edit');
     }
   } else {
@@ -421,11 +534,12 @@ function handleSaveTask(event) {
       id: newId,
       title: title,
       description: description,
+      deadline: deadline,
       time: time,
       completed: false,
       createdAt: now.toISOString(),
       comments: [],
-      order: 0 // New tasks at the top
+      order: 0
     };
     
     tasks.forEach(task => {

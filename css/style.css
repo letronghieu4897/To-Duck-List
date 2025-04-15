@@ -65,6 +65,42 @@ body {
   user-select: none; /* Prevent text selection during drag */
 }
 
+/* Deadline-based background colors */
+.task-item.overdue {
+  background: #ffe0e0;
+  border-color: #ff5252;
+  box-shadow: 0 1px 3px rgba(255, 82, 82, 0.2);
+}
+
+.task-item.urgent {
+  background: #ffe0e0;
+  border-color: #ff5252;
+  box-shadow: 0 1px 3px rgba(255, 82, 82, 0.2);
+}
+
+.task-item.warning {
+  background: #fff3e0;
+  border-color: #ff9800;
+  box-shadow: 0 1px 3px rgba(255, 152, 0, 0.2);
+}
+
+.task-item.normal {
+  background: #e3f2fd;
+  border-color: #2196F3;
+  box-shadow: 0 1px 3px rgba(33, 150, 243, 0.2);
+}
+
+.task-item.no-deadline {
+  background: #e8f5e9;
+  border-color: #4CAF50;
+  box-shadow: 0 1px 3px rgba(76, 175, 80, 0.2);
+}
+
+.task-item.completed {
+  border: 2px solid #000;
+  background: #e2e2e2;
+}
+
 .task-item .task-title {
   color: var(--text-color);
 }
@@ -74,11 +110,6 @@ body {
 }
 
 /* Style for completed tasks */
-.task-item.completed {
-  border: 2px solid #000;
-  background: #e2e2e2 ;
-}
-
 .task-item.completed .task-title {
   text-decoration: line-through;
   color: #000000;
@@ -116,6 +147,37 @@ body {
   justify-content: center;
   flex-shrink: 0;
   background-color: transparent;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.task-check:hover {
+  transform: scale(1.1);
+}
+
+/* Checkbox colors based on task status */
+.task-item.overdue .task-check {
+  border-color: #ff5252;
+  background-color: rgba(255, 82, 82, 0.15);
+}
+
+.task-item.urgent .task-check {
+  border-color: #ff5252;
+  background-color: rgba(255, 82, 82, 0.15);
+}
+
+.task-item.warning .task-check {
+  border-color: #ff9800;
+  background-color: rgba(255, 152, 0, 0.15);
+}
+
+.task-item.normal .task-check {
+  border-color: #2196F3;
+  background-color: rgba(33, 150, 243, 0.15);
+}
+
+.task-item.no-deadline .task-check {
+  border-color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.15);
 }
 
 .task-check.completed {
@@ -169,6 +231,46 @@ body {
 
 .task-date.completed {
   color: #4CAF50;
+}
+
+.task-date.deadline {
+  color: #2196F3;
+  font-weight: 500;
+}
+
+.task-date.deadline.overdue {
+  color: #f44336;
+  animation: pulse 2s infinite;
+}
+
+/* Add style for showing hours remaining */
+.task-date.deadline .hours-remaining {
+  background-color: #ff5252;
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-left: 4px;
+  font-size: 10px;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.task-item.completed .task-date.deadline {
+  color: #888;
+  animation: none;
 }
 
 .task-item.completed .task-date.completed {
