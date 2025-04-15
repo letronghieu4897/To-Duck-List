@@ -256,6 +256,27 @@ body {
   animation: pulse 2s infinite;
 }
 
+/* Style for days remaining */
+.task-date.deadline .days-remaining {
+  display: inline-block;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-left: 4px;
+  font-size: 10px;
+}
+
+/* Different colors based on urgency */
+.task-date.deadline .days-remaining.urgent {
+  background-color: #ff9800;
+  color: white;
+}
+
+.task-date.deadline .days-remaining.normal {
+  background-color: #2196F3;
+  color: white;
+}
+
 @keyframes pulse {
   0% {
     opacity: 1;

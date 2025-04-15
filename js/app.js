@@ -76,12 +76,12 @@ function init() {
         },
         {
           id: 5,
-          title: 'Finish Work',
-          description: 'Complete daily tasks',
-          time: '18:30',
-          completed: false,
+          title: 'Morning',
+          description: 'Morning routine tasks',
+          time: '08:30',
+          completed: true,
           createdAt: new Date().toISOString(),
-          deadline: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString(), // 14 days left (normal - blue)
+          completedAt: new Date().toISOString(),
           comments: [],
           order: 4
         }
@@ -276,12 +276,14 @@ function renderTaskItems(tasksArray) {
           const hourText = hoursRemaining === 1 ? 'hour' : 'hours';
           deadlineText += ` <span class="hours-remaining">${hoursRemaining} ${hourText} left</span>`;
         } else if (daysRemaining !== null) {
-          // Otherwise show days remaining
+          // Otherwise show days remaining with styling based on urgency
           const dayText = daysRemaining === 1 ? 'day' : 'days';
-          
-          // Apply different styles based on urgency
           let daysClass = 'days-remaining';
-          if (daysRemaining > 7) {
+          
+          // Add specific class based on how many days are left
+          if (daysRemaining <= 7) {
+            daysClass += ' urgent';
+          } else {
             daysClass += ' normal';
           }
           
