@@ -142,6 +142,37 @@ body {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
+  margin-bottom: 4px;
+}
+
+.task-dates {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+}
+
+.task-date {
+  display: flex;
+  align-items: center;
+  color: #777;
+  line-height: 1;
+}
+
+.task-date i {
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+.task-date.created {
+  color: #666;
+}
+
+.task-date.completed {
+  color: #4CAF50;
+}
+
+.task-item.completed .task-date.completed {
+  color: #4a7e4d;
 }
 
 .task-time {
@@ -239,25 +270,63 @@ body {
 }
 
 .task-details-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
   margin-bottom: 24px;
   color: #333;
   padding-right: 20px;
 }
 
-.close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  cursor: pointer;
-  font-size: 24px;
-  line-height: 1;
-  color: #999;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
 }
 
-.close-btn:hover {
-  color: #333;
+.btn {
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s;
+  font-weight: 500;
+  line-height: 1;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 8px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary.full-width {
+  flex: 1;
+  margin-right: 12px;
+}
+
+.btn-close {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  font-size: 20px;
+  width: 36px;
+  padding: 0;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-color-hover);
+}
+
+.btn-close:hover {
+  background-color: #ddd;
 }
 
 .detail-value {
@@ -305,23 +374,6 @@ textarea.form-control {
 #creationDate {
   color: #666;
   font-size: 16px;
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  color: white;
-  width: 100%;
-  padding: 14px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: background-color 0.3s;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-color-hover);
 }
 
 .modal-actions {
@@ -410,4 +462,46 @@ textarea.form-control {
 .toast i {
   margin-right: 8px;
   font-size: 16px;
+}
+
+/* Ensure buttons have proper spacing on very small screens */
+@media (max-width: 360px) {
+  .modal-header .task-details-title {
+    max-width: 35%;
+    font-size: 18px;
+  }
+  
+  .btn-primary {
+    min-width: 90px;
+    padding: 8px 16px;
+  }
+}
+
+.dates-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.date-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.date-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Creation date styles */
+#creationDateContainer, #completionDateContainer {
+  margin-bottom: 0;
+}
+
+#creationDate, #completionDate {
+  color: #666;
+  font-size: 14px;
 } 

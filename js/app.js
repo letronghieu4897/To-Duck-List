@@ -10,6 +10,8 @@ const titleInput = document.getElementById('title');
 const descriptionInput = document.getElementById('description');
 const creationDateContainer = document.getElementById('creationDateContainer');
 const creationDate = document.getElementById('creationDate');
+const completionDateContainer = document.getElementById('completionDateContainer');
+const completionDate = document.getElementById('completionDate');
 const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toastMessage');
 const toastIcon = document.getElementById('toastIcon');
@@ -80,6 +82,7 @@ function init() {
           time: '08:30',
           completed: true,
           createdAt: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
           comments: [],
           order: 4
         }
@@ -93,7 +96,9 @@ function init() {
   // Add event listeners
   addTaskBtn.addEventListener('click', openAddTaskModal);
   closeFormBtn.addEventListener('click', closeFormModal);
-  taskForm.addEventListener('submit', handleSaveTask);
+  
+  // Change this from form submission to button click
+  document.getElementById('saveTaskBtn').addEventListener('click', handleSaveTask);
   
   // Add event delegation for task list interactions
   taskList.addEventListener('click', handleTaskListClick);
@@ -214,8 +219,32 @@ function renderTaskItems(tasksArray) {
     taskDescription.className = 'task-description';
     taskDescription.textContent = task.description || 'No description';
     
+    // Create dates container
+    const taskDates = document.createElement('div');
+    taskDates.className = 'task-dates';
+    
+    // Format and add creation date
+    const createdDateObj = new Date(task.createdAt);
+    const formattedCreationDate = formatDateShort(createdDateObj);
+    const createdElement = document.createElement('div');
+    createdElement.className = 'task-date created';
+    createdElement.innerHTML = `<i class="fas fa-calendar-plus"></i> ${formattedCreationDate}`;
+    taskDates.appendChild(createdElement);
+    
+    // Add completion date if task is completed
+    if (task.completed && task.completedAt) {
+      const completedDateObj = new Date(task.completedAt);
+      const formattedCompletionDate = formatDateShort(completedDateObj);
+      const completedElement = document.createElement('div');
+      completedElement.className = 'task-date completed';
+      completedElement.innerHTML = `<i class="fas fa-calendar-check"></i> ${formattedCompletionDate}`;
+      taskDates.appendChild(completedElement);
+    }
+    
+    // Add elements to taskContent
     taskContent.appendChild(taskTitle);
     taskContent.appendChild(taskDescription);
+    taskContent.appendChild(taskDates);
     
     // Create delete button
     const deleteBtn = document.createElement('button');
@@ -231,6 +260,16 @@ function renderTaskItems(tasksArray) {
     
     taskList.appendChild(taskItem);
   });
+}
+
+// Helper function to format dates in a shorter format for task list
+function formatDateShort(dateObj) {
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const hours = dateObj.getHours().toString().padStart(2, '0');
+  const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+  
+  return `${day}/${month} ${hours}:${minutes}`;
 }
 
 // Drag and drop handlers
@@ -355,27 +394,36 @@ function toggleTaskCompletion(taskId) {
   if (taskIndex !== -1) {
     tasks[taskIndex].completed = !tasks[taskIndex].completed;
     
+    // Add or remove completion date
+    if (tasks[taskIndex].completed) {
+      tasks[taskIndex].completedAt = new Date().toISOString();
+      showToast(`Task "${tasks[taskIndex].title}" completed!`, 'success', 'fa-check-circle');
+    } else {
+      // If un-completing, remove the completion date
+      delete tasks[taskIndex].completedAt;
+    }
+    
     // Sort tasks with completed ones at the bottom
     sortTasksByCompletion();
     
     saveTasks();
     renderTasks();
-    
-    // Show notification if task is completed
-    if (tasks[taskIndex].completed) {
-      showToast(`Task "${tasks[taskIndex].title}" completed!`, 'success', 'fa-check-circle');
-    }
   }
 }
 
 // Open add task modal
 function openAddTaskModal() {
-  formTitle.textContent = 'Add New Task';
+  // We're not showing the title anymore, but keep the logic in case we restore it later
+  // formTitle.textContent = 'Add New Task';
   taskIdInput.value = '';
   titleInput.value = '';
   descriptionInput.value = '';
   creationDateContainer.style.display = 'none';
+  completionDateContainer.style.display = 'none';
   taskFormModal.style.display = 'block';
+  
+  // Set the appropriate text on the save button
+  document.getElementById('saveTaskBtn').textContent = 'Save New Task';
 }
 
 // Open edit task modal
@@ -383,23 +431,30 @@ function openEditTaskModal(taskId) {
   const task = tasks.find(task => task.id === taskId);
   
   if (task) {
-    formTitle.textContent = 'Edit Task';
+    // We're not showing the title anymore, but keep the logic in case we restore it later
+    // formTitle.textContent = 'Edit Task';
     taskIdInput.value = taskId;
     titleInput.value = task.title;
     descriptionInput.value = task.description || '';
     
-    // Format creation date like in the reference image (HH:MM:SS D/M/YYYY)
-    const dateObj = new Date(task.createdAt);
-    const hours = dateObj.getHours().toString().padStart(2, '0');
-    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-    const seconds = dateObj.getSeconds().toString().padStart(2, '0');
-    const day = dateObj.getDate();
-    const month = dateObj.getMonth() + 1;
-    const year = dateObj.getFullYear();
+    // Set the appropriate text on the save button
+    document.getElementById('saveTaskBtn').textContent = 'Update Task';
     
-    const formattedDate = `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
-    creationDate.textContent = formattedDate;
+    // Format creation date
+    const dateObj = new Date(task.createdAt);
+    const formattedCreationDate = formatDate(dateObj);
+    creationDate.textContent = formattedCreationDate;
     creationDateContainer.style.display = 'block';
+    
+    // Display completion date if task is completed
+    if (task.completed && task.completedAt) {
+      const completionObj = new Date(task.completedAt);
+      const formattedCompletionDate = formatDate(completionObj);
+      completionDate.textContent = formattedCompletionDate;
+      completionDateContainer.style.display = 'block';
+    } else {
+      completionDateContainer.style.display = 'none';
+    }
     
     // Show the modal
     taskFormModal.style.display = 'block';
@@ -411,9 +466,12 @@ function closeFormModal() {
   taskFormModal.style.display = 'none';
 }
 
-// Handle save task form submission
+// Handle save task button click
 function handleSaveTask(event) {
-  event.preventDefault();
+  // Prevent default action if it's a form submission
+  if (event && event.preventDefault) {
+    event.preventDefault();
+  }
   
   const taskId = taskIdInput.value ? parseInt(taskIdInput.value) : null;
   const title = titleInput.value.trim();
@@ -504,6 +562,18 @@ function showToast(message, type = 'success', icon = 'fa-check-circle', duration
   setTimeout(() => {
     toast.classList.remove('show');
   }, duration);
+}
+
+// Helper function to format dates consistently
+function formatDate(dateObj) {
+  const hours = dateObj.getHours().toString().padStart(2, '0');
+  const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+  const seconds = dateObj.getSeconds().toString().padStart(2, '0');
+  const day = dateObj.getDate();
+  const month = dateObj.getMonth() + 1;
+  const year = dateObj.getFullYear();
+  
+  return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
 }
 
 // Initialize app when DOM is ready
