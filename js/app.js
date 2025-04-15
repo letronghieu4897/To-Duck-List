@@ -145,7 +145,7 @@ function renderTasks() {
     const emptyState = document.createElement('div');
     emptyState.className = 'empty-state';
     emptyState.innerHTML = `
-      <i class="fas fa-clipboard-list"></i>
+      <img src="images/no-tasks.png" alt="No tasks" class="no-tasks-image">
       <p>No tasks yet</p>
       <p>Click the + button to add a new task</p>
     `;
