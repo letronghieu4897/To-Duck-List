@@ -172,6 +172,7 @@ function renderTaskItems(tasksArray) {
     let daysRemaining = null;
     let hoursRemaining = null;
     let deadlineClass = '';
+    let timeRemainingElement = null;
     
     if (task.deadline && !task.completed) {
       const deadlineDate = new Date(task.deadline);
@@ -199,6 +200,19 @@ function renderTaskItems(tasksArray) {
         deadlineClass = 'warning';
       } else {
         deadlineClass = 'normal';
+      }
+      
+      if (!task.completed) {
+        timeRemainingElement = document.createElement('div');
+        timeRemainingElement.className = 'time-remaining-indicator';
+        
+        if (hoursRemaining !== null && hoursRemaining > 0) {
+          timeRemainingElement.innerHTML = `<span class="hours-remaining">${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} left</span>`;
+        } else if (daysRemaining !== null && !isOverdue) {
+          const daysText = daysRemaining === 1 ? '1 day left' : `${daysRemaining} days left`;
+          const urgencyClass = daysRemaining <= 7 ? 'urgent' : 'normal';
+          timeRemainingElement.innerHTML = `<span class="days-remaining ${urgencyClass}">${daysText}</span>`;
+        }
       }
     } else if (!task.completed) {
       deadlineClass = 'no-deadline';
@@ -232,6 +246,10 @@ function renderTaskItems(tasksArray) {
     const taskContent = document.createElement('div');
     taskContent.className = 'task-content';
     
+    if (timeRemainingElement) {
+      taskContent.appendChild(timeRemainingElement);
+    }
+    
     const taskTitle = document.createElement('div');
     taskTitle.className = 'task-title';
     taskTitle.textContent = task.title;
@@ -263,14 +281,6 @@ function renderTaskItems(tasksArray) {
       const deadlineDateEl = document.createElement('div');
       deadlineDateEl.className = isOverdue ? 'task-date deadline overdue' : 'task-date deadline';
       
-      if (!task.completed && hoursRemaining !== null && hoursRemaining > 0) {
-        deadlineText += ` <span class="hours-remaining">${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} left</span>`;
-      } else if (!task.completed && daysRemaining !== null && !isOverdue) {
-        const daysText = daysRemaining === 1 ? '1 day left' : `${daysRemaining} days left`;
-        const urgencyClass = daysRemaining <= 7 ? 'urgent' : 'normal';
-        deadlineText += ` <span class="days-remaining ${urgencyClass}">${daysText}</span>`;
-      }
-      
       deadlineDateEl.innerHTML = deadlineText;
       taskDates.appendChild(deadlineDateEl);
     }
@@ -294,9 +304,12 @@ function renderTaskItems(tasksArray) {
 }
 
 function formatDateShort(dateObj) {
-  return dateObj.toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-  });
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const hours = dateObj.getHours().toString().padStart(2, '0');
+  const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+  
+  return `${day}/${month} ${hours}:${minutes}`;
 }
 
 function handleDragStart(e) {

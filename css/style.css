@@ -614,4 +614,34 @@ textarea.form-control {
 
 #creationDate, #completionDate {
   font-size: 12px;
+}
+
+.time-remaining-indicator {
+  margin-bottom: 6px;
+}
+
+.time-remaining-indicator .hours-remaining,
+.time-remaining-indicator .days-remaining {
+  display: inline-block;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.time-remaining-indicator .hours-remaining {
+  background-color: #ff5252;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.time-remaining-indicator .days-remaining.urgent {
+  background-color: #ff9800;
+  color: white;
+}
+
+.time-remaining-indicator .days-remaining.normal {
+  background-color: #2196F3;
+  color: white;
 } 
