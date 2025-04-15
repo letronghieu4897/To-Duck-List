@@ -10,6 +10,9 @@ const titleInput = document.getElementById('title');
 const descriptionInput = document.getElementById('description');
 const creationDateContainer = document.getElementById('creationDateContainer');
 const creationDate = document.getElementById('creationDate');
+const toast = document.getElementById('toast');
+const toastMessage = document.getElementById('toastMessage');
+const toastIcon = document.getElementById('toastIcon');
 
 // Store drag information
 let draggedItem = null;
@@ -357,6 +360,11 @@ function toggleTaskCompletion(taskId) {
     
     saveTasks();
     renderTasks();
+    
+    // Show notification if task is completed
+    if (tasks[taskIndex].completed) {
+      showToast(`Task "${tasks[taskIndex].title}" completed!`, 'success', 'fa-check-circle');
+    }
   }
 }
 
@@ -419,6 +427,8 @@ function handleSaveTask(event) {
     if (taskIndex !== -1) {
       tasks[taskIndex].title = title;
       tasks[taskIndex].description = description;
+      // Show notification for task update
+      showToast(`Task "${title}" updated!`, 'info', 'fa-edit');
     }
   } else {
     // Create new task
@@ -444,6 +454,9 @@ function handleSaveTask(event) {
     
     tasks.unshift(newTask);
     sortTasksByCompletion();
+    
+    // Show notification for new task
+    showToast(`Task "${title}" added!`, 'info', 'fa-plus-circle');
   }
   
   saveTasks();
@@ -456,6 +469,7 @@ function deleteTask(taskId) {
   if (confirm('Are you sure you want to delete this task?')) {
     const taskIndex = tasks.findIndex(task => task.id === taskId);
     if (taskIndex !== -1) {
+      const taskTitle = tasks[taskIndex].title;
       tasks.splice(taskIndex, 1);
       // Update order properties after deletion
       tasks.forEach((task, index) => {
@@ -463,8 +477,33 @@ function deleteTask(taskId) {
       });
       saveTasks();
       renderTasks();
+      // Show notification for task deletion
+      showToast(`Task "${taskTitle}" deleted!`, 'danger', 'fa-trash');
     }
   }
+}
+
+// Show toast notification
+function showToast(message, type = 'success', icon = 'fa-check-circle', duration = 3000) {
+  // Set the message
+  toastMessage.textContent = message;
+  
+  // Set the icon
+  toastIcon.className = `fas ${icon}`;
+  
+  // Remove all type classes
+  toast.classList.remove('success', 'danger', 'info');
+  
+  // Add the type class
+  toast.classList.add(type);
+  
+  // Show the toast
+  toast.classList.add('show');
+  
+  // Hide after duration
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration);
 }
 
 // Initialize app when DOM is ready

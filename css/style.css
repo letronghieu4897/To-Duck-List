@@ -371,4 +371,43 @@ textarea.form-control {
 .drag-handle::after {
   content: '• • •';
   line-height: 5px;
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.toast.success {
+  background-color: #4CAF50;
+}
+
+.toast.danger {
+  background-color: #f44336;
+}
+
+.toast.info {
+  background-color: #2196F3;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast i {
+  margin-right: 8px;
+  font-size: 16px;
 } 
