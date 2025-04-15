@@ -17,14 +17,14 @@
   </div>
   
   <ul class="task-list" id="taskList">
-    <!-- Tasks will be dynamically inserted here -->
   </ul>
 
-  <!-- Add/Edit Task Modal -->
   <div class="modal task-form-modal" id="taskFormModal">
     <div class="modal-content">
-      <span class="close-btn" id="closeFormBtn">&times;</span>
-      <h2 class="task-details-title" id="formTitle">Add New Task</h2>
+      <div class="modal-header">
+        <button type="button" class="btn btn-primary full-width" id="saveTaskBtn">Save</button>
+        <button type="button" class="btn btn-close" id="closeFormBtn">&times;</button>
+      </div>
       
       <form id="taskForm">
         <input type="hidden" id="taskId">
@@ -38,16 +38,29 @@
           <textarea class="form-control" id="description" placeholder="Enter task description" rows="3"></textarea>
         </div>
         
-        <div class="form-group" id="creationDateContainer" style="display: none;">
-          <label>Creation Date</label>
-          <div class="detail-value" id="creationDate"></div>
+        <div class="form-group">
+          <label for="deadline">Deadline</label>
+          <input type="datetime-local" class="form-control" id="deadline">
         </div>
         
-        <div class="modal-actions">
-          <button type="submit" class="btn btn-primary" id="saveTaskBtn">Save</button>
+        <div class="dates-container">
+          <div class="form-group date-group" id="creationDateContainer" style="display: none;">
+            <label>Creation Date</label>
+            <div class="detail-value" id="creationDate"></div>
+          </div>
+          
+          <div class="form-group date-group" id="completionDateContainer" style="display: none;">
+            <label>Completion Date</label>
+            <div class="detail-value" id="completionDate"></div>
+          </div>
         </div>
       </form>
     </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <i id="toastIcon" class="fas"></i>
+    <span id="toastMessage">Task completed!</span>
   </div>
 
   <script src="js/app.js"></script>

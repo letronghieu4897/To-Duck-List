@@ -1,4 +1,3 @@
-// DOM Elements
 const taskList = document.getElementById('taskList');
 const addTaskBtn = document.getElementById('addTaskBtn');
 const taskFormModal = document.getElementById('taskFormModal');
@@ -8,27 +7,28 @@ const formTitle = document.getElementById('formTitle');
 const taskIdInput = document.getElementById('taskId');
 const titleInput = document.getElementById('title');
 const descriptionInput = document.getElementById('description');
+const deadlineInput = document.getElementById('deadline');
 const creationDateContainer = document.getElementById('creationDateContainer');
 const creationDate = document.getElementById('creationDate');
+const completionDateContainer = document.getElementById('completionDateContainer');
+const completionDate = document.getElementById('completionDate');
+const toast = document.getElementById('toast');
+const toastMessage = document.getElementById('toastMessage');
+const toastIcon = document.getElementById('toastIcon');
 
-// Store drag information
 let draggedItem = null;
 let draggedIndex = null;
 
-// Sample data (replace with actual storage)
 let tasks = [];
 
-// Initialize application
 function init() {
-  // Load tasks from Chrome storage
   chrome.storage.sync.get(['tasks'], function(result) {
     if (result.tasks) {
       tasks = result.tasks;
       sortTasksByCompletion();
       renderTasks();
-      updateBadge(); // Update badge with initial count
+      updateBadge();
     } else {
-      // Add some sample tasks if none exist
       tasks = [
         {
           id: 1,
@@ -37,6 +37,7 @@ function init() {
           time: '09:30',
           completed: false,
           createdAt: new Date().toISOString(),
+          deadline: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString(),
           comments: [],
           order: 0
         },
@@ -47,13 +48,14 @@ function init() {
           time: '14:30',
           completed: false,
           createdAt: new Date().toISOString(),
+          deadline: new Date(new Date().setHours(new Date().getHours() - 2)).toISOString(),
           comments: [],
           order: 1
         },
         {
           id: 3,
           title: 'Status Checking',
-          description: 'Review project progress',
+          description: 'Review project progress (no deadline)',
           time: '16:30',
           completed: false,
           createdAt: new Date().toISOString(),
@@ -62,11 +64,12 @@ function init() {
         },
         {
           id: 4,
-          title: 'Finish Work',
-          description: 'Complete daily tasks',
-          time: '18:30',
+          title: 'Urgent Meeting',
+          description: 'Prepare for urgent meeting (due today)',
+          time: '10:30',
           completed: false,
           createdAt: new Date().toISOString(),
+          deadline: new Date(new Date().setHours(new Date().getHours() + 3)).toISOString(),
           comments: [],
           order: 3
         },
@@ -77,6 +80,7 @@ function init() {
           time: '08:30',
           completed: true,
           createdAt: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
           comments: [],
           order: 4
         }
@@ -87,62 +91,57 @@ function init() {
     }
   });
 
-  // Add event listeners
   addTaskBtn.addEventListener('click', openAddTaskModal);
   closeFormBtn.addEventListener('click', closeFormModal);
-  taskForm.addEventListener('submit', handleSaveTask);
   
-  // Add event delegation for task list interactions
+  document.getElementById('saveTaskBtn').addEventListener('click', handleSaveTask);
+  
   taskList.addEventListener('click', handleTaskListClick);
 }
 
-// Sort tasks - incomplete first, completed at the bottom
 function sortTasksByCompletion() {
-  // First sort by order
   tasks.sort((a, b) => (a.order || 0) - (b.order || 0));
   
-  // Then separate completed from incomplete
   const incompleteTasks = tasks.filter(task => !task.completed);
   const completedTasks = tasks.filter(task => task.completed);
   
-  // Combine them back with completed at the bottom
+  incompleteTasks.sort((a, b) => {
+    if (a.deadline && b.deadline) {
+      return new Date(a.deadline) - new Date(b.deadline);
+    }
+    if (a.deadline) return -1;
+    if (b.deadline) return 1;
+    return 0;
+  });
+  
   tasks = [...incompleteTasks, ...completedTasks];
   
-  // Update order based on new positions
   tasks.forEach((task, index) => {
     task.order = index;
   });
 }
 
-// Save tasks to Chrome storage
 function saveTasks() {
   chrome.storage.sync.set({ tasks: tasks }, function() {
-    // Update badge with count of incomplete tasks
     updateBadge();
   });
 }
 
-// Update the extension badge with count of incomplete tasks
 function updateBadge() {
   const incompleteTasks = tasks.filter(task => !task.completed);
   const count = incompleteTasks.length;
   
-  // Set badge text to the count (empty string if zero)
   chrome.action.setBadgeText({ text: count > 0 ? count.toString() : "" });
   
-  // Set badge background color (blue for our theme)
   chrome.action.setBadgeBackgroundColor({ color: '#f4a02c' });
 }
 
-// Render tasks to the UI
 function renderTasks() {
   taskList.innerHTML = '';
 
-  // Check if we have any completed tasks
   const hasCompletedTasks = tasks.some(task => task.completed);
   
   if (tasks.length === 0) {
-    // Show empty state message
     const emptyState = document.createElement('div');
     emptyState.className = 'empty-state';
     emptyState.innerHTML = `
@@ -154,34 +153,79 @@ function renderTasks() {
     return;
   }
   
-  // First, render incomplete tasks
   const incompleteTasks = tasks.filter(task => !task.completed);
   renderTaskItems(incompleteTasks);
   
-  // Add separator if we have both incomplete and completed tasks
   if (hasCompletedTasks && incompleteTasks.length > 0) {
     const separator = document.createElement('div');
     separator.className = 'task-separator';
     taskList.appendChild(separator);
   }
   
-  // Then render completed tasks
   const completedTasks = tasks.filter(task => task.completed);
   renderTaskItems(completedTasks);
 }
 
-// Helper function to render task items
 function renderTaskItems(tasksArray) {
   tasksArray.forEach((task, index) => {
+    let isOverdue = false;
+    let daysRemaining = null;
+    let hoursRemaining = null;
+    let deadlineClass = '';
+    let timeRemainingElement = null;
+    
+    if (task.deadline && !task.completed) {
+      const deadlineDate = new Date(task.deadline);
+      const currentDate = new Date();
+      const isOverdue = deadlineDate < currentDate;
+      
+      const currentDateDay = new Date(currentDate);
+      currentDateDay.setHours(0, 0, 0, 0);
+      const deadlineDateDay = new Date(deadlineDate);
+      deadlineDateDay.setHours(0, 0, 0, 0);
+      
+      const timeDiffDays = deadlineDateDay.getTime() - currentDateDay.getTime();
+      daysRemaining = Math.ceil(timeDiffDays / (1000 * 3600 * 24));
+      
+      if (daysRemaining <= 0 && !isOverdue) {
+        const timeDiffHours = deadlineDate.getTime() - currentDate.getTime();
+        hoursRemaining = Math.ceil(timeDiffHours / (1000 * 3600));
+      }
+      
+      if (isOverdue) {
+        deadlineClass = 'overdue';
+      } else if (daysRemaining <= 1) {
+        deadlineClass = 'urgent';
+      } else if (daysRemaining <= 7) {
+        deadlineClass = 'warning';
+      } else {
+        deadlineClass = 'normal';
+      }
+      
+      if (!task.completed) {
+        timeRemainingElement = document.createElement('div');
+        timeRemainingElement.className = 'time-remaining-indicator';
+        
+        if (hoursRemaining !== null && hoursRemaining > 0) {
+          timeRemainingElement.innerHTML = `<span class="hours-remaining">${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} left</span>`;
+        } else if (daysRemaining !== null && !isOverdue) {
+          const daysText = daysRemaining === 1 ? '1 day left' : `${daysRemaining} days left`;
+          const urgencyClass = daysRemaining <= 7 ? 'urgent' : 'normal';
+          timeRemainingElement.innerHTML = `<span class="days-remaining ${urgencyClass}">${daysText}</span>`;
+        }
+      }
+    } else if (!task.completed) {
+      deadlineClass = 'no-deadline';
+    }
+
     const taskItem = document.createElement('li');
-    taskItem.className = task.completed ? 'task-item completed' : 'task-item';
+    taskItem.className = task.completed ? 'task-item completed' : 
+                        `task-item ${deadlineClass}`;
     taskItem.dataset.id = task.id;
     taskItem.dataset.index = index;
     
-    // Add drag and drop attributes
     taskItem.setAttribute('draggable', 'true');
     
-    // Add drag event listeners
     taskItem.addEventListener('dragstart', handleDragStart);
     taskItem.addEventListener('dragenter', handleDragEnter);
     taskItem.addEventListener('dragover', handleDragOver);
@@ -189,7 +233,6 @@ function renderTaskItems(tasksArray) {
     taskItem.addEventListener('drop', handleDrop);
     taskItem.addEventListener('dragend', handleDragEnd);
     
-    // Add drag handle
     const dragHandle = document.createElement('div');
     dragHandle.className = 'drag-handle';
     
@@ -203,23 +246,53 @@ function renderTaskItems(tasksArray) {
     const taskContent = document.createElement('div');
     taskContent.className = 'task-content';
     
+    if (timeRemainingElement) {
+      taskContent.appendChild(timeRemainingElement);
+    }
+    
     const taskTitle = document.createElement('div');
     taskTitle.className = 'task-title';
     taskTitle.textContent = task.title;
     
     const taskDescription = document.createElement('div');
     taskDescription.className = 'task-description';
-    taskDescription.textContent = task.description || 'No description';
+    taskDescription.textContent = task.description;
+    
+    const taskDates = document.createElement('div');
+    taskDates.className = 'task-dates';
+    
+    const createdDate = document.createElement('div');
+    createdDate.className = 'task-date created';
+    createdDate.innerHTML = `<i class="far fa-calendar-plus"></i> ${formatDateShort(new Date(task.createdAt))}`;
+    
+    taskDates.appendChild(createdDate);
+    
+    if (task.completed && task.completedAt) {
+      const completedDateEl = document.createElement('div');
+      completedDateEl.className = 'task-date completed';
+      completedDateEl.innerHTML = `<i class="far fa-calendar-check"></i> ${formatDateShort(new Date(task.completedAt))}`;
+      taskDates.appendChild(completedDateEl);
+    }
+    
+    if (task.deadline) {
+      const deadlineDate = new Date(task.deadline);
+      let deadlineText = `<i class="far fa-calendar-alt"></i> ${formatDateShort(deadlineDate)}`;
+      
+      const deadlineDateEl = document.createElement('div');
+      deadlineDateEl.className = isOverdue ? 'task-date deadline overdue' : 'task-date deadline';
+      
+      deadlineDateEl.innerHTML = deadlineText;
+      taskDates.appendChild(deadlineDateEl);
+    }
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.dataset.id = task.id;
+    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
     
     taskContent.appendChild(taskTitle);
     taskContent.appendChild(taskDescription);
-    
-    // Create delete button
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-    deleteBtn.dataset.id = task.id;
-    deleteBtn.title = 'Delete task';
+    taskContent.appendChild(taskDates);
     
     taskItem.appendChild(dragHandle);
     taskItem.appendChild(taskCheck);
@@ -230,27 +303,25 @@ function renderTaskItems(tasksArray) {
   });
 }
 
-// Drag and drop handlers
-function handleDragStart(e) {
-  // Don't allow dragging completed tasks
-  const taskId = parseInt(e.target.dataset.id);
-  const task = tasks.find(t => t.id === taskId);
-  if (task && task.completed) {
-    e.preventDefault();
-    return;
-  }
-
-  draggedItem = e.target;
-  draggedIndex = parseInt(e.target.dataset.index);
+function formatDateShort(dateObj) {
+  const day = dateObj.getDate().toString().padStart(2, '0');
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const hours = dateObj.getHours().toString().padStart(2, '0');
+  const minutes = dateObj.getMinutes().toString().padStart(2, '0');
   
-  // Add dragging class
+  return `${day}/${month} ${hours}:${minutes}`;
+}
+
+function handleDragStart(e) {
+  draggedItem = this;
+  draggedIndex = parseInt(this.dataset.index);
+  
   setTimeout(() => {
-    e.target.classList.add('dragging');
+    this.classList.add('dragging');
   }, 0);
   
-  // Set data for drag
   e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', e.target.dataset.id);
+  e.dataTransfer.setData('text/html', this.innerHTML);
 }
 
 function handleDragEnter(e) {
@@ -261,17 +332,13 @@ function handleDragOver(e) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
   
-  // Only add drag-over class if we're not dragging over a completed task
-  const taskElement = e.target.closest('.task-item');
-  if (taskElement) {
-    const taskId = parseInt(taskElement.dataset.id);
-    const task = tasks.find(t => t.id === taskId);
-    
-    // Don't allow dropping on completed tasks
-    if (task && !task.completed) {
-      taskElement.classList.add('drag-over');
-    }
+  const targetItem = e.target.closest('.task-item');
+  
+  if (targetItem && targetItem !== draggedItem) {
+    targetItem.classList.add('drag-over');
   }
+  
+  return false;
 }
 
 function handleDragLeave(e) {
@@ -279,193 +346,201 @@ function handleDragLeave(e) {
 }
 
 function handleDrop(e) {
-  e.preventDefault();
+  e.stopPropagation();
   
-  // Find the drop target
-  const dropTarget = e.target.closest('.task-item');
-  if (!dropTarget) return;
+  const targetItem = e.target.closest('.task-item');
   
-  // Get the target task and make sure it's not completed
-  const targetTaskId = parseInt(dropTarget.dataset.id);
-  const targetTask = tasks.find(t => t.id === targetTaskId);
-  if (targetTask && targetTask.completed) return;
+  if (!targetItem || targetItem === draggedItem) {
+    return false;
+  }
   
-  // Remove drag-over class
-  dropTarget.classList.remove('drag-over');
+  const targetIndex = parseInt(targetItem.dataset.index);
   
-  // Get dropped task ID and target ID
-  const draggedTaskId = parseInt(draggedItem.dataset.id);
+  const targetTask = tasks.find(task => task.id === parseInt(targetItem.dataset.id));
+  const draggedTask = tasks.find(task => task.id === parseInt(draggedItem.dataset.id));
   
-  // Get indices
-  const targetIndex = parseInt(dropTarget.dataset.index);
-  
-  if (draggedIndex !== targetIndex) {
-    // Reorder tasks array
-    const [movedTask] = tasks.splice(draggedIndex, 1);
-    tasks.splice(targetIndex, 0, movedTask);
+  if (targetTask && draggedTask) {
+    const tempOrder = targetTask.order;
+    targetTask.order = draggedTask.order;
+    draggedTask.order = tempOrder;
     
-    // Update order properties
-    tasks.forEach((task, index) => {
-      task.order = index;
-    });
-    
-    // Save and render
     saveTasks();
     renderTasks();
   }
+  
+  return false;
 }
 
 function handleDragEnd(e) {
-  // Remove dragging class
-  e.target.classList.remove('dragging');
-  
-  // Remove any leftover drag-over classes
-  document.querySelectorAll('.task-item').forEach(item => {
-    item.classList.remove('drag-over');
+  const taskItems = document.querySelectorAll('.task-item');
+  taskItems.forEach(item => {
+    item.classList.remove('dragging', 'drag-over');
   });
-  
-  // Reset dragged item
-  draggedItem = null;
-  draggedIndex = null;
 }
 
-// Handle clicks on the task list
 function handleTaskListClick(event) {
-  const taskId = parseInt(event.target.closest('li, .task-check, .delete-btn')?.dataset.id);
-  if (!taskId) return;
-  
-  // Check if the click was on the checkbox area
   if (event.target.closest('.task-check')) {
+    const taskId = parseInt(event.target.closest('.task-check').dataset.id);
     toggleTaskCompletion(taskId);
   } else if (event.target.closest('.delete-btn')) {
-    // If click was on the delete button
+    const taskId = parseInt(event.target.closest('.delete-btn').dataset.id);
     deleteTask(taskId);
-  } else if (!event.target.closest('.drag-handle') && event.target.closest('.task-item')) {
-    // If click was on the task item (but not the drag handle, checkbox or delete button), open edit form
+  } else if (event.target.closest('.task-item')) {
+    const taskId = parseInt(event.target.closest('.task-item').dataset.id);
     openEditTaskModal(taskId);
   }
 }
 
-// Toggle task completion status
 function toggleTaskCompletion(taskId) {
-  const taskIndex = tasks.findIndex(task => task.id === taskId);
-  if (taskIndex !== -1) {
-    tasks[taskIndex].completed = !tasks[taskIndex].completed;
+  const task = tasks.find(task => task.id === taskId);
+  
+  if (task) {
+    task.completed = !task.completed;
+    if (task.completed) {
+      task.completedAt = new Date().toISOString();
+      showToast(`Task "${task.title}" completed!`, 'success', 'fa-check-circle');
+    } else {
+      task.completedAt = null;
+    }
     
-    // Sort tasks with completed ones at the bottom
     sortTasksByCompletion();
-    
     saveTasks();
     renderTasks();
   }
 }
 
-// Open add task modal
 function openAddTaskModal() {
-  formTitle.textContent = 'Add New Task';
+  taskForm.reset();
   taskIdInput.value = '';
-  titleInput.value = '';
-  descriptionInput.value = '';
+  
   creationDateContainer.style.display = 'none';
+  completionDateContainer.style.display = 'none';
+  
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(23, 59, 0, 0);
+  
+  deadlineInput.value = tomorrow.toISOString().slice(0, 16);
+  
   taskFormModal.style.display = 'block';
 }
 
-// Open edit task modal
 function openEditTaskModal(taskId) {
   const task = tasks.find(task => task.id === taskId);
   
   if (task) {
-    formTitle.textContent = 'Edit Task';
-    taskIdInput.value = taskId;
+    taskForm.reset();
+    
+    taskIdInput.value = task.id;
     titleInput.value = task.title;
-    descriptionInput.value = task.description || '';
+    descriptionInput.value = task.description;
     
-    // Format creation date like in the reference image (HH:MM:SS D/M/YYYY)
-    const dateObj = new Date(task.createdAt);
-    const hours = dateObj.getHours().toString().padStart(2, '0');
-    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-    const seconds = dateObj.getSeconds().toString().padStart(2, '0');
-    const day = dateObj.getDate();
-    const month = dateObj.getMonth() + 1;
-    const year = dateObj.getFullYear();
+    if (task.deadline) {
+      deadlineInput.value = new Date(task.deadline).toISOString().slice(0, 16);
+    } else {
+      deadlineInput.value = '';
+    }
     
-    const formattedDate = `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
-    creationDate.textContent = formattedDate;
     creationDateContainer.style.display = 'block';
+    creationDate.textContent = formatDate(new Date(task.createdAt));
     
-    // Show the modal
+    if (task.completed && task.completedAt) {
+      completionDateContainer.style.display = 'block';
+      completionDate.textContent = formatDate(new Date(task.completedAt));
+    } else {
+      completionDateContainer.style.display = 'none';
+    }
+    
     taskFormModal.style.display = 'block';
   }
 }
 
-// Close task form modal
 function closeFormModal() {
   taskFormModal.style.display = 'none';
 }
 
-// Handle save task form submission
 function handleSaveTask(event) {
   event.preventDefault();
   
-  const taskId = taskIdInput.value ? parseInt(taskIdInput.value) : null;
   const title = titleInput.value.trim();
   const description = descriptionInput.value.trim();
+  const deadline = deadlineInput.value ? new Date(deadlineInput.value).toISOString() : null;
   
-  if (!title) return;
-  
-  if (taskId) {
-    // Update existing task
-    const taskIndex = tasks.findIndex(task => task.id === taskId);
-    if (taskIndex !== -1) {
-      tasks[taskIndex].title = title;
-      tasks[taskIndex].description = description;
-    }
-  } else {
-    // Create new task
-    const newId = tasks.length > 0 ? Math.max(...tasks.map(task => task.id)) + 1 : 1;
-    const now = new Date();
-    const time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    
-    const newTask = {
-      id: newId,
-      title: title,
-      description: description,
-      time: time,
-      completed: false,
-      createdAt: now.toISOString(),
-      comments: [],
-      order: 0 // New tasks at the top
-    };
-    
-    // Increment order for existing tasks
-    tasks.forEach(task => {
-      task.order = (task.order || 0) + 1;
-    });
-    
-    tasks.unshift(newTask);
-    sortTasksByCompletion();
+  if (!title) {
+    showToast('Please enter a task title', 'danger', 'fa-exclamation-circle');
+    return;
   }
   
+  const taskId = taskIdInput.value ? parseInt(taskIdInput.value) : null;
+  
+  if (taskId) {
+    const existingTask = tasks.find(task => task.id === taskId);
+    
+    if (existingTask) {
+      existingTask.title = title;
+      existingTask.description = description;
+      existingTask.deadline = deadline;
+      
+      showToast(`Task "${title}" updated`, 'info', 'fa-info-circle');
+    }
+  } else {
+    const newTaskId = tasks.length > 0 ? Math.max(...tasks.map(task => task.id)) + 1 : 1;
+    
+    const newTask = {
+      id: newTaskId,
+      title,
+      description,
+      completed: false,
+      createdAt: new Date().toISOString(),
+      deadline,
+      order: tasks.length
+    };
+    
+    tasks.push(newTask);
+    showToast(`Task "${title}" added`, 'success', 'fa-check-circle');
+  }
+  
+  sortTasksByCompletion();
   saveTasks();
   renderTasks();
   closeFormModal();
 }
 
-// Delete task
 function deleteTask(taskId) {
-  if (confirm('Are you sure you want to delete this task?')) {
-    const taskIndex = tasks.findIndex(task => task.id === taskId);
-    if (taskIndex !== -1) {
-      tasks.splice(taskIndex, 1);
-      // Update order properties after deletion
-      tasks.forEach((task, index) => {
-        task.order = index;
-      });
-      saveTasks();
-      renderTasks();
-    }
+  const taskIndex = tasks.findIndex(task => task.id === taskId);
+  
+  if (taskIndex !== -1) {
+    const taskTitle = tasks[taskIndex].title;
+    tasks.splice(taskIndex, 1);
+    
+    sortTasksByCompletion();
+    saveTasks();
+    renderTasks();
+    
+    showToast(`Task "${taskTitle}" deleted`, 'info', 'fa-trash');
   }
 }
 
-// Initialize app when DOM is ready
+function showToast(message, type = 'success', icon = 'fa-check-circle', duration = 3000) {
+  toastMessage.textContent = message;
+  toastIcon.className = `fas ${icon}`;
+  toast.className = `toast ${type} show`;
+  
+  setTimeout(() => {
+    toast.className = toast.className.replace('show', '');
+  }, duration);
+}
+
+function formatDate(dateObj) {
+  return dateObj.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short', 
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 document.addEventListener('DOMContentLoaded', init); 
+
