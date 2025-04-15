@@ -14,6 +14,7 @@ A modern, minimalist Chrome Extension for task management. Features drag-and-dro
 - 🔄 Tasks persist between browser sessions
 - 🎯 Tasks automatically sorted by deadline proximity
 - 🖱️ Drag and drop to reorder tasks
+- 🔒 Privacy-focused: all data stays local on your device
 
 ## Installation
 The extension can be installed directly from the Chrome Web Store.
@@ -36,6 +37,7 @@ The extension can be installed directly from the Chrome Web Store.
 To-Duck-List/
 ├── manifest.json       # Extension configuration
 ├── popup.html          # Main extension popup
+├── privacy-policy.html # Privacy policy document
 ├── js/
 │   ├── app.js          # Main application logic
 ├── css/
@@ -68,6 +70,16 @@ To-Duck-List/
 ## Storage
 
 Tasks are stored in Chrome's local storage, ensuring your tasks persist between browser sessions. No data is sent to external servers.
+
+## Privacy
+
+To-Duck List prioritizes your privacy:
+- All task data is stored locally on your device
+- No personal information is collected
+- No data is transmitted to external servers
+- No analytics or tracking
+
+For more details, see our [Privacy Policy](privacy-policy.html).
 
 ## Contributing
 
