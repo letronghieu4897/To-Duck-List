@@ -495,6 +495,9 @@ body {
 
 .detail-value {
   margin: 0;
+  line-height: 1.4;
+  color: var(--text-color);
+  font-weight: 500;
 }
 
 .form-group {
@@ -530,12 +533,34 @@ textarea.form-control {
   min-height: 60px;
 }
 
-#creationDateContainer {
-  margin-top: 24px;
+#creationDateContainer, #completionDateContainer {
+  font-size: 12px;
 }
 
-#creationDate {
+#creationDate, #completionDate {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color);
+  display: inline-flex;
+  align-items: center;
+}
+
+#creationDate::before {
+  content: "\f073";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-right: 4px;
+  font-size: 11px;
   color: #666;
+}
+
+#completionDate::before {
+  content: "\f00c";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-right: 4px;
+  font-size: 11px;
+  color: var(--no-deadline-color);
 }
 
 .modal-actions {
@@ -641,13 +666,27 @@ textarea.form-control {
 
 .dates-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: nowrap;
   gap: 16px;
+  margin-top: 16px;
+}
+
+.dates-container.single-date #creationDateContainer {
+  flex-basis: 100%;
+}
+
+.dates-container:has(#completionDateContainer[style*="display: none"]) #creationDateContainer {
+  flex-basis: 100%;
 }
 
 .date-group {
   flex: 1;
   min-width: 120px;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+  padding: 8px 12px;
 }
 
 .date-group label {
@@ -655,14 +694,6 @@ textarea.form-control {
   margin-bottom: 4px;
   font-weight: 500;
   color: #555;
-  font-size: 12px;
-}
-
-#creationDateContainer, #completionDateContainer {
-  font-size: 12px;
-}
-
-#creationDate, #completionDate {
   font-size: 12px;
 }
 

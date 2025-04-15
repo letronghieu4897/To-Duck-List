@@ -418,6 +418,9 @@ function openAddTaskModal() {
   creationDateContainer.style.display = 'none';
   completionDateContainer.style.display = 'none';
   
+  const datesContainer = document.querySelector('.dates-container');
+  datesContainer.classList.remove('single-date');
+  
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(23, 59, 0, 0);
@@ -446,11 +449,15 @@ function openEditTaskModal(taskId) {
     creationDateContainer.style.display = 'block';
     creationDate.textContent = formatDate(new Date(task.createdAt));
     
+    const datesContainer = document.querySelector('.dates-container');
+    
     if (task.completed && task.completedAt) {
       completionDateContainer.style.display = 'block';
       completionDate.textContent = formatDate(new Date(task.completedAt));
+      datesContainer.classList.remove('single-date');
     } else {
       completionDateContainer.style.display = 'none';
+      datesContainer.classList.add('single-date');
     }
     
     taskFormModal.style.display = 'block';
