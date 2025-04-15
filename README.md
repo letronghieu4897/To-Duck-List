@@ -6,10 +6,13 @@ To-Duck List is a lightweight and user-friendly Chrome Extension that helps you 
 
 - ✨ Clean, modern interface
 - 📝 Create and manage tasks with titles and descriptions
+- 📅 Set deadlines for tasks with visual countdown indicators
+- 🎨 Color-coded tasks based on deadline urgency
+- ⏰ Shows hours remaining for same-day deadlines
 - ✅ Mark tasks as complete with visual feedback
 - 🗑️ Delete tasks you no longer need
 - 🔄 Tasks persist between browser sessions
-- 🎨 Visual distinction between completed and pending tasks
+- 🎯 Tasks automatically sorted by deadline proximity
 - 🖱️ Drag and drop to reorder tasks
 
 ## Installation
@@ -44,8 +47,7 @@ To-Duck-List/
 ├── manifest.json       # Extension configuration
 ├── popup.html          # Main extension popup
 ├── js/
-│   ├── popup.js        # Main application logic
-│   └── background.js   # Background scripts
+│   ├── app.js          # Main application logic
 ├── css/
 │   └── style.css       # Styling
 ├── icons/              # Extension icons
@@ -57,13 +59,21 @@ To-Duck-List/
 2. Add a new task:
    - Click the "+" button
    - Enter task title and description
-   - Press Enter or click Add
+   - Set a deadline (optional)
+   - Click Save
 
 3. Manage tasks:
    - Click the checkbox to mark a task as complete
    - Click the trash icon to delete a task
    - Drag tasks to reorder them
    - Completed tasks show with strikethrough and different styling
+
+4. Deadline Color-Coding:
+   - 🔴 **Red**: Overdue tasks or due within 1 day
+   - 🟠 **Orange**: Tasks due within 2-7 days
+   - 🔵 **Blue**: Tasks due after 7 days
+   - 🟢 **Green**: Tasks with no deadline
+   - ⚪ **Gray**: Completed tasks
 
 ## Storage
 
