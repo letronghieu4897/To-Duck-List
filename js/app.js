@@ -177,7 +177,7 @@ function renderTaskItems(tasksArray) {
     if (task.deadline && !task.completed) {
       const deadlineDate = new Date(task.deadline);
       const currentDate = new Date();
-      const isOverdue = deadlineDate < currentDate;
+      isOverdue = deadlineDate < currentDate;
       
       const currentDateDay = new Date(currentDate);
       currentDateDay.setHours(0, 0, 0, 0);
@@ -206,7 +206,9 @@ function renderTaskItems(tasksArray) {
         timeRemainingElement = document.createElement('div');
         timeRemainingElement.className = 'time-remaining-indicator';
         
-        if (hoursRemaining !== null && hoursRemaining > 0) {
+        if (isOverdue) {
+          timeRemainingElement.innerHTML = `<span class="overdue">Overdue</span>`;
+        } else if (hoursRemaining !== null && hoursRemaining > 0) {
           timeRemainingElement.innerHTML = `<span class="hours-remaining">${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} left</span>`;
         } else if (daysRemaining !== null && !isOverdue) {
           const daysText = daysRemaining === 1 ? '1 day left' : `${daysRemaining} days left`;

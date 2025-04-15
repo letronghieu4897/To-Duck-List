@@ -7,6 +7,19 @@
   --pending-color: #e2e2e2;
   --border-radius: 8px;
   --primary-color-hover: #ff7d03;
+  --overdue-color: #9c27b0;
+  --urgent-color: #ff5252;
+  --warning-color: #ff9800;
+  --normal-color: #2196F3;
+  --no-deadline-color: #4CAF50;
+  
+  /* Task item status background colors */
+  --overdue-bg: #f5e0ff;
+  --urgent-bg: #ffe0e0;
+  --warning-bg: #fff3e0;
+  --normal-bg: #e3f2fd;
+  --no-deadline-bg: #e8f5e9;
+  --completed-bg: #e2e2e2;
 }
 
 body {
@@ -63,41 +76,78 @@ body {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
   user-select: none;
+  position: relative;
+}
+
+.task-item::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #4CAF50;
+}
+
+.task-item.overdue::before {
+  background-color: var(--overdue-color);
+}
+
+.task-item.urgent::before {
+  background-color: var(--urgent-color);
+}
+
+.task-item.warning::before {
+  background-color: var(--warning-color);
+}
+
+.task-item.normal::before {
+  background-color: var(--normal-color);
+}
+
+.task-item.no-deadline::before {
+  background-color: var(--no-deadline-color);
+}
+
+.task-item.completed::before {
+  background-color: #535353;
 }
 
 .task-item.overdue {
-  background: #ffe0e0;
-  border-color: #ff5252;
-  box-shadow: 0 1px 3px rgba(255, 82, 82, 0.2);
+  background: var(--overdue-bg);
+  border-color: var(--overdue-color);
+  box-shadow: 0 1px 3px rgba(156, 39, 176, 0.2);
 }
 
 .task-item.urgent {
-  background: #ffe0e0;
-  border-color: #ff5252;
+  background: var(--urgent-bg);
+  border-color: var(--urgent-color);
   box-shadow: 0 1px 3px rgba(255, 82, 82, 0.2);
 }
 
 .task-item.warning {
-  background: #fff3e0;
-  border-color: #ff9800;
+  background: var(--warning-bg);
+  border-color: var(--warning-color);
   box-shadow: 0 1px 3px rgba(255, 152, 0, 0.2);
 }
 
 .task-item.normal {
-  background: #e3f2fd;
-  border-color: #2196F3;
+  background: var(--normal-bg);
+  border-color: var(--normal-color);
   box-shadow: 0 1px 3px rgba(33, 150, 243, 0.2);
 }
 
 .task-item.no-deadline {
-  background: #e8f5e9;
-  border-color: #4CAF50;
+  background: var(--no-deadline-bg);
+  border-color: var(--no-deadline-color);
   box-shadow: 0 1px 3px rgba(76, 175, 80, 0.2);
 }
 
 .task-item.completed {
   border: 2px solid #000;
-  background: #e2e2e2;
+  background: var(--completed-bg);
 }
 
 .task-item .task-title {
@@ -153,27 +203,27 @@ body {
 }
 
 .task-item.overdue .task-check {
-  border-color: #ff5252;
-  background-color: rgba(255, 82, 82, 0.15);
+  border-color: var(--overdue-color);
+  background-color: rgba(156, 39, 176, 0.15);
 }
 
 .task-item.urgent .task-check {
-  border-color: #ff5252;
+  border-color: var(--urgent-color);
   background-color: rgba(255, 82, 82, 0.15);
 }
 
 .task-item.warning .task-check {
-  border-color: #ff9800;
+  border-color: var(--warning-color);
   background-color: rgba(255, 152, 0, 0.15);
 }
 
 .task-item.normal .task-check {
-  border-color: #2196F3;
+  border-color: var(--normal-color);
   background-color: rgba(33, 150, 243, 0.15);
 }
 
 .task-item.no-deadline .task-check {
-  border-color: #4CAF50;
+  border-color: var(--no-deadline-color);
   background-color: rgba(76, 175, 80, 0.15);
 }
 
@@ -236,12 +286,12 @@ body {
 }
 
 .task-date.deadline.overdue {
-  color: #f44336;
+  color: var(--overdue-color);
   animation: pulse 2s infinite;
 }
 
 .task-date.deadline .hours-remaining {
-  background-color: #ff5252;
+  background-color: var(--urgent-color);
   color: white;
   font-weight: bold;
   padding: 2px 4px;
@@ -264,12 +314,12 @@ body {
 }
 
 .task-date.deadline .days-remaining.urgent {
-  background-color: #ff9800;
+  background-color: var(--warning-color);
   color: white;
 }
 
 .task-date.deadline .days-remaining.normal {
-  background-color: #2196F3;
+  background-color: var(--normal-color);
   color: white;
 }
 
@@ -621,7 +671,8 @@ textarea.form-control {
 }
 
 .time-remaining-indicator .hours-remaining,
-.time-remaining-indicator .days-remaining {
+.time-remaining-indicator .days-remaining,
+.time-remaining-indicator .overdue {
   display: inline-block;
   font-weight: bold;
   padding: 3px 6px;
@@ -631,17 +682,23 @@ textarea.form-control {
 }
 
 .time-remaining-indicator .hours-remaining {
-  background-color: #ff5252;
+  background-color: var(--urgent-color);
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.time-remaining-indicator .overdue {
+  background-color: var(--overdue-color);
   color: white;
   animation: pulse 2s infinite;
 }
 
 .time-remaining-indicator .days-remaining.urgent {
-  background-color: #ff9800;
+  background-color: var(--warning-color);
   color: white;
 }
 
 .time-remaining-indicator .days-remaining.normal {
-  background-color: #2196F3;
+  background-color: var(--normal-color);
   color: white;
 } 
