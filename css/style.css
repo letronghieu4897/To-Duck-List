@@ -676,7 +676,10 @@ textarea.form-control {
 }
 
 .time-remaining-indicator {
-  margin-bottom: 6px;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 2;
 }
 
 .time-remaining-indicator .hours-remaining,
@@ -684,10 +687,11 @@ textarea.form-control {
 .time-remaining-indicator .overdue {
   display: inline-block;
   font-weight: bold;
-  padding: 3px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
   font-size: 11px;
-  line-height: 1;
+  line-height: 1.2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .time-remaining-indicator .hours-remaining {
@@ -839,4 +843,8 @@ textarea.form-control {
   font-size: 36px;
   margin-bottom: 12px;
   color: #ccc;
+}
+
+.task-item.completed .time-remaining-indicator {
+  display: none;
 } 

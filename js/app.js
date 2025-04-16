@@ -614,9 +614,9 @@ class TaskUIController {
     const taskContent = document.createElement('div');
     taskContent.className = 'task-content';
     
-    // Add time remaining indicator if needed
-    if (deadlineInfo.timeRemainingElement) {
-      taskContent.appendChild(deadlineInfo.timeRemainingElement);
+    // Add time remaining indicator directly to task-item if needed, not to task-content
+    if (deadlineInfo.timeRemainingElement && !task.completed) {
+      taskItem.appendChild(deadlineInfo.timeRemainingElement);
     }
     
     // Add title and description
