@@ -2,10 +2,6 @@
 
 A modern, minimalist Chrome Extension for task management. Features drag-and-drop organization, persistent storage, and a clean UI. Built with vanilla JavaScript for speed and simplicity. Perfect for users who want their todo list just a click away in their browser.
 
-## Description
-
-To-Duck List is a simple and intuitive Chrome Extension for managing your tasks. The extension features a rubber duck as a mascot to make your task management experience more enjoyable.
-
 ## Features
 
 - ✨ Clean, modern interface
@@ -19,14 +15,9 @@ To-Duck List is a simple and intuitive Chrome Extension for managing your tasks.
 - 🎯 Tasks automatically sorted by deadline proximity
 - 🖱️ Drag and drop to reorder tasks
 - 🔒 Privacy-focused: all data stays local on your device
-- **Deadline Management**: Set, view, and track deadlines for your tasks
-- **Color-Coded Priority System**: Visual indicators based on deadline proximity
-  - Red: Urgent (overdue or less than 1 day remaining)
-  - Orange: Warning (2-7 days remaining)
-  - Blue: Normal (more than 7 days remaining)
-  - Green: No deadline set
-- **Time Remaining Indicators**: Shows hours left for same-day deadlines and days left for future deadlines
-- **Task Sorting**: Tasks are automatically sorted by deadline proximity
+- **Task deadline management with color coding**
+- **Priority visualization based on deadline proximity**
+- **Time remaining indicators for better deadline awareness**
 
 ## Installation
 The extension can be installed directly from the Chrome Web Store.
@@ -79,13 +70,13 @@ To-Duck-List/
    - 🟢 **Green**: Tasks with no deadline
    - ⚪ **Gray**: Completed tasks
 
-5. **Setting Deadlines**: When adding or editing a task, use the date/time picker to set a deadline.
-6. **Understanding Task Colors**:
-   - Red background: Urgent tasks (overdue or due within 24 hours)
-   - Orange background: Warning tasks (due in 2-7 days)
-   - Blue background: Normal tasks (due in more than 7 days)
-   - Green background: Tasks with no deadline
-   - Gray background: Completed tasks
+5. **Set deadlines for tasks using the date picker**
+6. **Tasks are automatically sorted and color-coded by deadline proximity:**
+   - **Red: Overdue or due within 24 hours**
+   - **Orange: Due in 2-7 days**
+   - **Blue: Due in more than 7 days**
+   - **Green: No deadline set**
+   - **Tasks with same-day deadlines show hours remaining**
 
 ## Storage
 

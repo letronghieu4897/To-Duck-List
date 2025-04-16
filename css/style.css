@@ -681,25 +681,9 @@ textarea.form-control {
   right: -8px;
   z-index: 2;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding: 6px;
-  border-radius: 12px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.deadline-time {
-  font-size: 0.75rem;
-  color: #666;
-  margin-top: 2px;
-  font-weight: normal;
-}
-
-.task-item.completed .time-remaining-indicator {
-  display: none;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
 .time-remaining-indicator .hours-remaining,
@@ -863,4 +847,23 @@ textarea.form-control {
   font-size: 36px;
   margin-bottom: 12px;
   color: #ccc;
+}
+
+.task-item.completed .time-remaining-indicator {
+  display: none;
+}
+
+/* Styling for deadline time in time remaining indicator */
+.deadline-time {
+  display: inline-block;
+  font-size: 0.8em;
+  margin-left: 5px;
+  opacity: 0.8;
+  color: #333;
+  font-style: italic;
+}
+
+.overdue + .deadline-time {
+  color: #fff;
+  opacity: 0.9;
 } 

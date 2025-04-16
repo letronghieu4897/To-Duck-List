@@ -37,61 +37,61 @@ class TaskModel {
     tomorrow.setDate(now.getDate() + 1);
     
     return [
-      {
-        id: 1,
-        title: 'Start Work',
-        description: 'Begin daily tasks',
-        time: '09:30',
-        completed: false,
+        {
+          id: 1,
+          title: 'Start Work',
+          description: 'Begin daily tasks',
+          time: '09:30',
+          completed: false,
         createdAt: now.toISOString(),
         deadline: tomorrow.toISOString(),
-        comments: [],
-        order: 0
-      },
-      {
-        id: 2,
-        title: 'Visit Consumer',
-        description: 'Schedule meeting with client',
-        time: '14:30',
-        completed: false,
+          comments: [],
+          order: 0
+        },
+        {
+          id: 2,
+          title: 'Visit Consumer',
+          description: 'Schedule meeting with client',
+          time: '14:30',
+          completed: false,
         createdAt: now.toISOString(),
         deadline: new Date(now.setHours(now.getHours() - 2)).toISOString(),
-        comments: [],
-        order: 1
-      },
-      {
-        id: 3,
-        title: 'Status Checking',
+          comments: [],
+          order: 1
+        },
+        {
+          id: 3,
+          title: 'Status Checking',
         description: 'Review project progress (no deadline)',
-        time: '16:30',
-        completed: false,
+          time: '16:30',
+          completed: false,
         createdAt: now.toISOString(),
-        comments: [],
-        order: 2
-      },
-      {
-        id: 4,
+          comments: [],
+          order: 2
+        },
+        {
+          id: 4,
         title: 'Urgent Meeting',
         description: 'Prepare for urgent meeting (due today)',
         time: '10:30',
-        completed: false,
+          completed: false,
         createdAt: now.toISOString(),
         deadline: new Date(now.setHours(now.getHours() + 3)).toISOString(),
-        comments: [],
-        order: 3
-      },
-      {
-        id: 5,
-        title: 'Morning',
-        description: 'Morning routine tasks',
-        time: '08:30',
-        completed: true,
+          comments: [],
+          order: 3
+        },
+        {
+          id: 5,
+          title: 'Morning',
+          description: 'Morning routine tasks',
+          time: '08:30',
+          completed: true,
         createdAt: now.toISOString(),
         completedAt: now.toISOString(),
-        comments: [],
-        order: 4
-      }
-    ];
+          comments: [],
+          order: 4
+        }
+      ];
   }
 
   saveTasks() {
@@ -545,15 +545,15 @@ class TaskUIController {
     
     // Create document fragment for better performance
     const fragment = document.createDocumentFragment();
-    
-    if (tasks.length === 0) {
-      const emptyState = document.createElement('div');
-      emptyState.className = 'empty-state';
-      emptyState.innerHTML = `
-        <i class="fas fa-clipboard-list"></i>
-        <p>No tasks yet</p>
-        <p>Click the + button to add a new task</p>
-      `;
+  
+  if (tasks.length === 0) {
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.innerHTML = `
+      <i class="fas fa-clipboard-list"></i>
+      <p>No tasks yet</p>
+      <p>Click the + button to add a new task</p>
+    `;
       fragment.appendChild(emptyState);
     } else {
       const incompleteTasks = tasks.filter(task => !task.completed);
@@ -564,8 +564,8 @@ class TaskUIController {
       
       // Add separator if both types exist
       if (incompleteTasks.length > 0 && completedTasks.length > 0) {
-        const separator = document.createElement('div');
-        separator.className = 'task-separator';
+    const separator = document.createElement('div');
+    separator.className = 'task-separator';
         fragment.appendChild(separator);
       }
       
@@ -582,7 +582,7 @@ class TaskUIController {
   }
 
   #renderTaskGroup(tasksArray, fragment) {
-    tasksArray.forEach((task, index) => {
+  tasksArray.forEach((task, index) => {
       const taskItem = this.#createTaskElement(task, index);
       fragment.appendChild(taskItem);
     });
@@ -651,7 +651,7 @@ class TaskUIController {
       const deadlineDate = new Date(task.deadline);
       const deadlineDateEl = document.createElement('div');
       deadlineDateEl.className = deadlineInfo.isOverdue ? 'task-date deadline overdue' : 'task-date deadline';
-      deadlineDateEl.innerHTML = `<i class="far fa-calendar-alt"></i> ${this.#formatDateShort(deadlineDate)}`;
+      deadlineDateEl.innerHTML = `<i class="far fa-calendar-alt"></i>`;
       taskDates.appendChild(deadlineDateEl);
     }
     
@@ -675,46 +675,80 @@ class TaskUIController {
   }
 
   #calculateDeadlineInfo(task) {
-    if (!task.deadline) {
-      return null;
-    }
-
-    const deadlineDate = new Date(task.deadline);
-    const now = new Date();
-    const diff = deadlineDate - now;
-    const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
+    let isOverdue = false;
+    let daysRemaining = null;
+    let hoursRemaining = null;
+    let deadlineClass = '';
+    let timeRemainingElement = null;
     
-    const timeRemainingElement = document.createElement('div');
-    timeRemainingElement.className = 'time-remaining-indicator';
-    
-    const formattedDeadline = this.#formatDateShort(deadlineDate);
-    
-    if (diff < 0) {
-      timeRemainingElement.classList.add('overdue');
-      timeRemainingElement.innerHTML = `
-        <span class="overdue">Overdue</span>
-        <span class="deadline-time">${formattedDeadline}</span>
-      `;
-    } else if (hoursLeft < 24) {
-      // Less than 24 hours left
-      const hourText = hoursLeft === 1 ? 'hour' : 'hours';
-      timeRemainingElement.innerHTML = `
-        <span class="hours-remaining urgent">${hoursLeft} ${hourText} left</span>
-        <span class="deadline-time">${formattedDeadline}</span>
-      `;
-    } else {
-      // More than 24 hours left
-      const dayText = daysLeft === 1 ? 'day' : 'days';
-      let urgencyClass = daysLeft <= 7 ? 'urgent' : 'normal';
+    if (task.deadline && !task.completed) {
+      const deadlineDate = new Date(task.deadline);
+      const currentDate = new Date();
+      isOverdue = deadlineDate < currentDate;
       
-      timeRemainingElement.innerHTML = `
-        <span class="days-remaining ${urgencyClass}">${daysLeft} ${dayText} left</span>
-        <span class="deadline-time">${formattedDeadline}</span>
-      `;
+      // Calculate days remaining
+      const currentDateDay = new Date(currentDate);
+      currentDateDay.setHours(0, 0, 0, 0);
+      const deadlineDateDay = new Date(deadlineDate);
+      deadlineDateDay.setHours(0, 0, 0, 0);
+      
+      const timeDiffDays = deadlineDateDay.getTime() - currentDateDay.getTime();
+      daysRemaining = Math.ceil(timeDiffDays / (1000 * 3600 * 24));
+      
+      // Calculate hours remaining for same-day deadlines
+      if (daysRemaining <= 0 && !isOverdue) {
+        const timeDiffHours = deadlineDate.getTime() - currentDate.getTime();
+        hoursRemaining = Math.ceil(timeDiffHours / (1000 * 3600));
+      }
+      
+      // Set deadline class
+      if (isOverdue) {
+        deadlineClass = 'overdue';
+      } else if (daysRemaining <= 1) {
+        deadlineClass = 'urgent';
+      } else if (daysRemaining <= 7) {
+        deadlineClass = 'warning';
+      } else {
+        deadlineClass = 'normal';
+      }
+      
+      // Create time remaining element
+      if (!task.completed) {
+        timeRemainingElement = document.createElement('div');
+        timeRemainingElement.className = 'time-remaining-indicator';
+        
+        const deadlineTime = this.#formatDateShort(new Date(task.deadline));
+        
+        // Handle overdue tasks
+        if (daysRemaining < 0) {
+            const overdueDays = Math.abs(daysRemaining);
+            const overdueText = `${overdueDays} ${overdueDays === 1 ? 'day' : 'days'} overdue`;
+            timeRemainingElement.innerHTML = `<span class="overdue">${overdueText}</span><span class="deadline-time">${deadlineTime}</span>`;
+        }
+        // Handle tasks due today (less than 24 hours remaining)
+        else if (daysRemaining === 0) {
+            const hoursRemaining = Math.floor((deadlineDate - currentDate) / (1000 * 60 * 60));
+            const hoursText = `${hoursRemaining} ${hoursRemaining === 1 ? 'hour' : 'hours'} left`;
+            timeRemainingElement.innerHTML = `<span class="hours-remaining ${hoursRemaining <= 3 ? 'urgent' : 'normal'}">${hoursText}</span><span class="deadline-time">${deadlineTime}</span>`;
+        }
+        // Handle tasks with days remaining
+        else {
+            const daysText = `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left`;
+            const urgencyClass = daysRemaining <= 7 ? 'urgent' : 'normal';
+            timeRemainingElement.innerHTML = `<span class="days-remaining ${urgencyClass}">${daysText}</span><span class="deadline-time">${deadlineTime}</span>`;
+        }
+      }
+    } else if (!task.completed) {
+      deadlineClass = 'no-deadline';
     }
     
-    return timeRemainingElement;
+    return {
+      isOverdue,
+      daysRemaining,
+      hoursRemaining,
+      deadlineClass,
+      timeRemainingElement
+    };
   }
 
   #setupDragAndDrop() {
@@ -734,22 +768,22 @@ class TaskUIController {
     this.draggedItem = e.currentTarget;
     this.draggedId = parseInt(e.currentTarget.dataset.id);
     
-    setTimeout(() => {
+  setTimeout(() => {
       e.currentTarget.classList.add('dragging');
-    }, 0);
-    
-    e.dataTransfer.effectAllowed = 'move';
+  }, 0);
+  
+  e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
-  }
+}
 
   #handleDragEnter(e) {
-    e.preventDefault();
-  }
+  e.preventDefault();
+}
 
   #handleDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  
     const targetItem = e.currentTarget;
     
     if (targetItem && targetItem !== this.draggedItem) {
