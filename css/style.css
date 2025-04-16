@@ -79,42 +79,6 @@ body {
   position: relative;
 }
 
-.task-item::before {
-  content: '';
-  position: absolute;
-  left: -2px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #4CAF50;
-}
-
-.task-item.overdue::before {
-  background-color: var(--overdue-color);
-}
-
-.task-item.urgent::before {
-  background-color: var(--urgent-color);
-}
-
-.task-item.warning::before {
-  background-color: var(--warning-color);
-}
-
-.task-item.normal::before {
-  background-color: var(--normal-color);
-}
-
-.task-item.no-deadline::before {
-  background-color: var(--no-deadline-color);
-}
-
-.task-item.completed::before {
-  background-color: #535353;
-}
-
 .task-item.overdue {
   background: var(--overdue-bg);
   border-color: var(--overdue-color);
