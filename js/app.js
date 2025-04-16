@@ -675,69 +675,46 @@ class TaskUIController {
   }
 
   #calculateDeadlineInfo(task) {
-    let isOverdue = false;
-    let daysRemaining = null;
-    let hoursRemaining = null;
-    let deadlineClass = '';
-    let timeRemainingElement = null;
+    if (!task.deadline) {
+      return null;
+    }
+
+    const deadlineDate = new Date(task.deadline);
+    const now = new Date();
+    const diff = deadlineDate - now;
+    const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hoursLeft = Math.floor(diff / (1000 * 60 * 60));
     
-    if (task.deadline && !task.completed) {
-      const deadlineDate = new Date(task.deadline);
-      const currentDate = new Date();
-      isOverdue = deadlineDate < currentDate;
+    const timeRemainingElement = document.createElement('div');
+    timeRemainingElement.className = 'time-remaining-indicator';
+    
+    const formattedDeadline = this.#formatDateShort(deadlineDate);
+    
+    if (diff < 0) {
+      timeRemainingElement.classList.add('overdue');
+      timeRemainingElement.innerHTML = `
+        <span class="overdue">Overdue</span>
+        <span class="deadline-time">${formattedDeadline}</span>
+      `;
+    } else if (hoursLeft < 24) {
+      // Less than 24 hours left
+      const hourText = hoursLeft === 1 ? 'hour' : 'hours';
+      timeRemainingElement.innerHTML = `
+        <span class="hours-remaining urgent">${hoursLeft} ${hourText} left</span>
+        <span class="deadline-time">${formattedDeadline}</span>
+      `;
+    } else {
+      // More than 24 hours left
+      const dayText = daysLeft === 1 ? 'day' : 'days';
+      let urgencyClass = daysLeft <= 7 ? 'urgent' : 'normal';
       
-      // Calculate days remaining
-      const currentDateDay = new Date(currentDate);
-      currentDateDay.setHours(0, 0, 0, 0);
-      const deadlineDateDay = new Date(deadlineDate);
-      deadlineDateDay.setHours(0, 0, 0, 0);
-      
-      const timeDiffDays = deadlineDateDay.getTime() - currentDateDay.getTime();
-      daysRemaining = Math.ceil(timeDiffDays / (1000 * 3600 * 24));
-      
-      // Calculate hours remaining for same-day deadlines
-      if (daysRemaining <= 0 && !isOverdue) {
-        const timeDiffHours = deadlineDate.getTime() - currentDate.getTime();
-        hoursRemaining = Math.ceil(timeDiffHours / (1000 * 3600));
-      }
-      
-      // Set deadline class
-      if (isOverdue) {
-        deadlineClass = 'overdue';
-      } else if (daysRemaining <= 1) {
-        deadlineClass = 'urgent';
-      } else if (daysRemaining <= 7) {
-        deadlineClass = 'warning';
-      } else {
-        deadlineClass = 'normal';
-      }
-      
-      // Create time remaining element
-      if (!task.completed) {
-        timeRemainingElement = document.createElement('div');
-        timeRemainingElement.className = 'time-remaining-indicator';
-        
-        if (isOverdue) {
-          timeRemainingElement.innerHTML = `<span class="overdue">Overdue</span>`;
-        } else if (hoursRemaining !== null && hoursRemaining > 0) {
-          timeRemainingElement.innerHTML = `<span class="hours-remaining">${hoursRemaining} hour${hoursRemaining !== 1 ? 's' : ''} left</span>`;
-        } else if (daysRemaining !== null && !isOverdue) {
-          const daysText = daysRemaining === 1 ? '1 day left' : `${daysRemaining} days left`;
-          const urgencyClass = daysRemaining <= 7 ? 'urgent' : 'normal';
-          timeRemainingElement.innerHTML = `<span class="days-remaining ${urgencyClass}">${daysText}</span>`;
-        }
-      }
-    } else if (!task.completed) {
-      deadlineClass = 'no-deadline';
+      timeRemainingElement.innerHTML = `
+        <span class="days-remaining ${urgencyClass}">${daysLeft} ${dayText} left</span>
+        <span class="deadline-time">${formattedDeadline}</span>
+      `;
     }
     
-    return {
-      isOverdue,
-      daysRemaining,
-      hoursRemaining,
-      deadlineClass,
-      timeRemainingElement
-    };
+    return timeRemainingElement;
   }
 
   #setupDragAndDrop() {
