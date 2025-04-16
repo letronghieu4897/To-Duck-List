@@ -1,5 +1,7 @@
 # To-Duck List Chrome Extension
 
+[![Available in the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Available-brightgreen)](https://chromewebstore.google.com/detail/to-duck-list/inhceipanldclbflgafcjgglpgcjibij)
+
 To-Duck List is a fun and efficient task management Chrome extension, themed around adorable rubber ducks. The extension helps users organize their daily tasks while bringing a smile to their face with its playful duck theme.
 
 ## Features
@@ -31,6 +33,8 @@ To-Duck List is a fun and efficient task management Chrome extension, themed aro
 
 ## Installation
 The extension can be installed directly from the Chrome Web Store.
+
+[➡️ Install To-Duck List from Chrome Web Store](https://chromewebstore.google.com/detail/to-duck-list/inhceipanldclbflgafcjgglpgcjibij)
 
 ## Development
 
@@ -117,4 +121,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - Icons provided by [Material Icons](https://material.io/icons/)
-- Color scheme inspired by modern design principles 
+- Color scheme inspired by modern design principles
