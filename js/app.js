@@ -646,15 +646,6 @@ class TaskUIController {
       taskDates.appendChild(completedDateEl);
     }
     
-    // Deadline (if applicable)
-    if (task.deadline) {
-      const deadlineDate = new Date(task.deadline);
-      const deadlineDateEl = document.createElement('div');
-      deadlineDateEl.className = deadlineInfo.isOverdue ? 'task-date deadline overdue' : 'task-date deadline';
-      deadlineDateEl.innerHTML = `<i class="far fa-calendar-alt"></i>`;
-      taskDates.appendChild(deadlineDateEl);
-    }
-    
     // Delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-btn';
@@ -723,19 +714,19 @@ class TaskUIController {
         if (daysRemaining < 0) {
             const overdueDays = Math.abs(daysRemaining);
             const overdueText = `${overdueDays} ${overdueDays === 1 ? 'day' : 'days'} overdue`;
-            timeRemainingElement.innerHTML = `<span class="overdue">${overdueText}</span><span class="deadline-time">${deadlineTime}</span>`;
+            timeRemainingElement.innerHTML = `<span class="deadline-time">${deadlineTime}</span><span class="overdue">${overdueText}</span>`;
         }
         // Handle tasks due today (less than 24 hours remaining)
         else if (daysRemaining === 0) {
             const hoursRemaining = Math.floor((deadlineDate - currentDate) / (1000 * 60 * 60));
             const hoursText = `${hoursRemaining} ${hoursRemaining === 1 ? 'hour' : 'hours'} left`;
-            timeRemainingElement.innerHTML = `<span class="hours-remaining ${hoursRemaining <= 3 ? 'urgent' : 'normal'}">${hoursText}</span><span class="deadline-time">${deadlineTime}</span>`;
+            timeRemainingElement.innerHTML = `<span class="deadline-time">${deadlineTime}</span><span class="hours-remaining ${hoursRemaining <= 3 ? 'urgent' : 'normal'}">${hoursText}</span>`;
         }
         // Handle tasks with days remaining
         else {
             const daysText = `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left`;
             const urgencyClass = daysRemaining <= 7 ? 'urgent' : 'normal';
-            timeRemainingElement.innerHTML = `<span class="days-remaining ${urgencyClass}">${daysText}</span><span class="deadline-time">${deadlineTime}</span>`;
+            timeRemainingElement.innerHTML = `<span class="deadline-time">${deadlineTime}</span><span class="days-remaining ${urgencyClass}">${daysText}</span>`;
         }
       }
     } else if (!task.completed) {
