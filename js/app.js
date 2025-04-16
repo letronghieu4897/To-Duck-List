@@ -713,18 +713,18 @@ class TaskUIController {
         // Handle overdue tasks
         if (daysRemaining < 0) {
             const overdueDays = Math.abs(daysRemaining);
-            const overdueText = `${overdueDays} ${overdueDays === 1 ? 'day' : 'days'} overdue`;
+            const overdueText = `${overdueDays}d overdue`;
             timeRemainingElement.innerHTML = `<span class="deadline-time">${deadlineTime}</span><span class="overdue">${overdueText}</span>`;
         }
         // Handle tasks due today (less than 24 hours remaining)
         else if (daysRemaining === 0) {
             const hoursRemaining = Math.floor((deadlineDate - currentDate) / (1000 * 60 * 60));
-            const hoursText = `${hoursRemaining} ${hoursRemaining === 1 ? 'hour' : 'hours'} left`;
+            const hoursText = `${hoursRemaining}h`;
             timeRemainingElement.innerHTML = `<span class="deadline-time">${deadlineTime}</span><span class="hours-remaining ${hoursRemaining <= 3 ? 'urgent' : 'normal'}">${hoursText}</span>`;
         }
         // Handle tasks with days remaining
         else {
-            const daysText = `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} left`;
+            const daysText = `${daysRemaining}d`;
             const urgencyClass = daysRemaining <= 7 ? 'urgent' : 'normal';
             timeRemainingElement.innerHTML = `<span class="deadline-time">${deadlineTime}</span><span class="days-remaining ${urgencyClass}">${daysText}</span>`;
         }
