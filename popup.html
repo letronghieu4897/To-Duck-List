@@ -13,7 +13,12 @@
       <img src="icons/icon48.png" class="app-icon" alt="To-Duck List Logo">
       <h1>To-Duck List</h1>
     </div>
-    <button class="add-task-btn" id="addTaskBtn">+</button>
+    <div class="header-btns">
+      <button class="archive-btn" id="archiveBtn" title="View archived tasks">
+        <i class="fas fa-archive"></i>
+      </button>
+      <button class="add-task-btn" id="addTaskBtn" title="Add new task">+</button>
+    </div>
   </div>
   
   <ul class="task-list" id="taskList">
@@ -55,6 +60,24 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Archive Modal -->
+  <div class="modal archive-modal" id="archiveModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="archive-title">Archived Tasks</h2>
+        <button type="button" class="btn btn-close" id="closeArchiveBtn">&times;</button>
+      </div>
+      
+      <div class="archive-content">
+        <ul class="archive-list" id="archiveList"></ul>
+        <div class="empty-archive" id="emptyArchive" style="display: none;">
+          <i class="fas fa-archive"></i>
+          <p>No archived tasks</p>
+        </div>
+      </div>
     </div>
   </div>
 

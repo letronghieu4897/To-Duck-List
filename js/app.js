@@ -2,12 +2,13 @@
 class TaskModel {
   constructor() {
     this.tasks = [];
+    this.archivedTasks = [];
     this.listeners = [];
   }
 
   async loadTasks() {
     return new Promise(resolve => {
-      chrome.storage.sync.get(['tasks', 'firstUse'], result => {
+      chrome.storage.sync.get(['tasks', 'archivedTasks', 'firstUse'], result => {
         if (result.tasks && result.tasks.length) {
           // Existing tasks found, use them
           this.tasks = result.tasks;
@@ -19,6 +20,10 @@ class TaskModel {
           this.tasks = this.#getDefaultTasks();
           chrome.storage.sync.set({ firstUse: false });
         }
+        
+        // Load archived tasks if they exist
+        this.archivedTasks = result.archivedTasks || [];
+        
         this.sortTasksByCompletion();
         this.#notifyListeners();
         resolve(this.tasks);
@@ -91,7 +96,10 @@ class TaskModel {
 
   saveTasks() {
     return new Promise(resolve => {
-      chrome.storage.sync.set({ tasks: this.tasks }, () => {
+      chrome.storage.sync.set({ 
+        tasks: this.tasks,
+        archivedTasks: this.archivedTasks
+      }, () => {
         this.#updateBadge();
         resolve();
       });
@@ -123,6 +131,11 @@ class TaskModel {
     // Combine and reassign order
     this.tasks = [...incomplete, ...completed];
     this.tasks.forEach((task, index) => task.order = index);
+    
+    // Sort archived tasks by archive date (newest first)
+    this.archivedTasks.sort((a, b) => {
+      return new Date(b.archivedAt || b.createdAt) - new Date(a.archivedAt || a.createdAt);
+    });
   }
 
   addTask(taskData) {
@@ -155,6 +168,46 @@ class TaskModel {
     this.sortTasksByCompletion();
     this.#notifyListeners();
     return this.tasks[taskIndex];
+  }
+
+  archiveTask(taskId) {
+    const taskIndex = this.tasks.findIndex(task => task.id === taskId);
+    if (taskIndex === -1) return false;
+    
+    const task = this.tasks.splice(taskIndex, 1)[0];
+    
+    // Add archive date and push to archived tasks
+    task.archivedAt = new Date().toISOString();
+    this.archivedTasks.push(task);
+    
+    this.sortTasksByCompletion();
+    this.#notifyListeners();
+    return task;
+  }
+  
+  restoreTask(archivedTaskId) {
+    const taskIndex = this.archivedTasks.findIndex(task => task.id === archivedTaskId);
+    if (taskIndex === -1) return false;
+    
+    const task = this.archivedTasks.splice(taskIndex, 1)[0];
+    
+    // Remove archive date and add back to active tasks
+    delete task.archivedAt;
+    task.order = this.tasks.length;
+    this.tasks.push(task);
+    
+    this.sortTasksByCompletion();
+    this.#notifyListeners();
+    return task;
+  }
+  
+  deleteArchivedTask(archivedTaskId) {
+    const taskIndex = this.archivedTasks.findIndex(task => task.id === archivedTaskId);
+    if (taskIndex === -1) return false;
+    
+    const deletedTask = this.archivedTasks.splice(taskIndex, 1)[0];
+    this.#notifyListeners();
+    return deletedTask;
   }
 
   deleteTask(taskId) {
@@ -202,7 +255,7 @@ class TaskModel {
   }
 
   #notifyListeners() {
-    this.listeners.forEach(listener => listener(this.tasks));
+    this.listeners.forEach(listener => listener(this.tasks, this.archivedTasks));
   }
 }
 
@@ -217,6 +270,11 @@ class TaskUIController {
     this.elements = {
       taskList: document.getElementById('taskList'),
       addTaskBtn: document.getElementById('addTaskBtn'),
+      archiveBtn: document.getElementById('archiveBtn'),
+      archiveModal: document.getElementById('archiveModal'),
+      archiveList: document.getElementById('archiveList'),
+      emptyArchive: document.getElementById('emptyArchive'),
+      closeArchiveBtn: document.getElementById('closeArchiveBtn'),
       taskFormModal: document.getElementById('taskFormModal'),
       closeFormBtn: document.getElementById('closeFormBtn'),
       taskForm: document.getElementById('taskForm'),
@@ -239,14 +297,20 @@ class TaskUIController {
     this.#setupEventListeners();
     
     // Subscribe to model changes
-    this.model.addChangeListener(tasks => {
+    this.model.addChangeListener((tasks, archivedTasks) => {
       this.renderTasks(tasks);
+      this.renderArchivedTasks(archivedTasks);
     });
   }
 
   #setupEventListeners() {
     // Task list
     this.elements.taskList.addEventListener('click', this.#handleTaskListClick.bind(this));
+    
+    // Archive
+    this.elements.archiveBtn.addEventListener('click', this.openArchiveModal.bind(this));
+    this.elements.closeArchiveBtn.addEventListener('click', this.closeArchiveModal.bind(this));
+    this.elements.archiveList.addEventListener('click', this.#handleArchiveListClick.bind(this));
     
     // Task form
     this.elements.addTaskBtn.addEventListener('click', this.openAddTaskModal.bind(this));
@@ -265,9 +329,11 @@ class TaskUIController {
       this.model.saveTasks();
     } else if (event.target.closest('.delete-btn')) {
       const taskId = parseInt(event.target.closest('.delete-btn').dataset.id);
-      const task = this.model.deleteTask(taskId);
+      
+      // Archive the task instead of deleting it
+      const task = this.model.archiveTask(taskId);
       if (task) {
-        this.showToast(`Task "${task.title}" deleted`, 'info', 'fa-trash');
+        this.showToast(`Task "${task.title}" archived`, 'info', 'fa-archive');
         this.model.saveTasks();
       }
     } else if (event.target.closest('.task-item') && 
@@ -276,6 +342,106 @@ class TaskUIController {
       const taskId = parseInt(event.target.closest('.task-item').dataset.id);
       this.openEditTaskModal(taskId);
     }
+  }
+  
+  #handleArchiveListClick(event) {
+    const archiveItem = event.target.closest('.archive-item');
+    if (!archiveItem) return;
+    
+    const taskId = parseInt(archiveItem.dataset.id);
+    
+    if (event.target.closest('.restore-btn')) {
+      const task = this.model.restoreTask(taskId);
+      if (task) {
+        this.showToast(`Task "${task.title}" restored`, 'success', 'fa-undo');
+        this.model.saveTasks();
+      }
+    } else if (event.target.closest('.delete-forever-btn')) {
+      if (confirm('Are you sure you want to permanently delete this task?')) {
+        const task = this.model.deleteArchivedTask(taskId);
+        if (task) {
+          this.showToast(`Task "${task.title}" permanently deleted`, 'danger', 'fa-trash-alt');
+          this.model.saveTasks();
+        }
+      }
+    }
+  }
+
+  openArchiveModal() {
+    this.elements.archiveModal.style.display = 'block';
+  }
+  
+  closeArchiveModal() {
+    this.elements.archiveModal.style.display = 'none';
+  }
+  
+  renderArchivedTasks(archivedTasks) {
+    const { archiveList, emptyArchive } = this.elements;
+    
+    // Clear the archive list
+    archiveList.innerHTML = '';
+    
+    if (archivedTasks.length === 0) {
+      emptyArchive.style.display = 'block';
+      return;
+    }
+    
+    // Show the archive tasks
+    emptyArchive.style.display = 'none';
+    
+    archivedTasks.forEach(task => {
+      const archiveItem = this.#createArchiveElement(task);
+      archiveList.appendChild(archiveItem);
+    });
+  }
+  
+  #createArchiveElement(task) {
+    const item = document.createElement('li');
+    item.className = 'archive-item';
+    item.dataset.id = task.id;
+    
+    const content = document.createElement('div');
+    content.className = 'archive-item-content';
+    
+    const title = document.createElement('div');
+    title.className = 'archive-item-title';
+    title.textContent = task.title;
+    
+    const desc = document.createElement('div');
+    desc.className = 'archive-item-desc';
+    desc.textContent = task.description || 'No description';
+    
+    const date = document.createElement('div');
+    date.className = 'archive-item-date';
+    date.innerHTML = `
+      <span>Created: ${this.#formatDateShort(new Date(task.createdAt))}</span>
+      ${task.archivedAt ? ` • Archived: ${this.#formatDateShort(new Date(task.archivedAt))}` : ''}
+    `;
+    
+    content.appendChild(title);
+    content.appendChild(desc);
+    content.appendChild(date);
+    
+    const actions = document.createElement('div');
+    actions.className = 'archive-actions';
+    
+    const restoreBtn = document.createElement('button');
+    restoreBtn.className = 'restore-btn';
+    restoreBtn.title = 'Restore task';
+    restoreBtn.innerHTML = '<i class="fas fa-undo"></i>';
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-forever-btn';
+    deleteBtn.title = 'Delete permanently';
+    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    
+    actions.appendChild(restoreBtn);
+    actions.appendChild(deleteBtn);
+    
+    item.appendChild(content);
+    item.appendChild(actions);
+    
+    return item;
   }
 
   openAddTaskModal() {
@@ -313,7 +479,7 @@ class TaskUIController {
     
     taskIdInput.value = task.id;
     titleInput.value = task.title;
-    descriptionInput.value = task.description;
+    descriptionInput.value = task.description || '';
     
     if (task.deadline) {
       deadlineInput.value = new Date(task.deadline).toISOString().slice(0, 16);
@@ -384,7 +550,7 @@ class TaskUIController {
       const emptyState = document.createElement('div');
       emptyState.className = 'empty-state';
       emptyState.innerHTML = `
-        <img src="images/no-tasks.png" alt="No tasks" class="no-tasks-image">
+        <i class="fas fa-clipboard-list"></i>
         <p>No tasks yet</p>
         <p>Click the + button to add a new task</p>
       `;
