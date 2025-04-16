@@ -1,9 +1,19 @@
-# To-Duck-List
+# To-Duck List Chrome Extension
 
-A modern, minimalist Chrome Extension for task management. Features drag-and-drop organization, persistent storage, and a clean UI. Built with vanilla JavaScript for speed and simplicity. Perfect for users who want their todo list just a click away in their browser.
+To-Duck List is a fun and efficient task management Chrome extension, themed around adorable rubber ducks. The extension helps users organize their daily tasks while bringing a smile to their face with its playful duck theme.
 
 ## Features
 
+- **Simple Task Management**: Add, check off, and remove tasks easily.
+- **Persistent Storage**: Your tasks are saved locally in your browser.
+- **Duck Theme**: Enjoy the cheerful duck-themed interface.
+- **Deadline Functionality**: Set and track task deadlines with intuitive color-coding:
+  - **Red**: Urgent tasks (overdue or less than 1 day remaining)
+  - **Orange**: Warning tasks (2-7 days remaining)
+  - **Blue**: Normal tasks (more than 7 days remaining)
+  - **Green**: Tasks with no deadline
+- **Time Remaining Indicators**: Visual badges show hours left for same-day deadlines and days left for future deadlines
+- **Priority Sorting**: Tasks are automatically sorted by deadline proximity
 - ✨ Clean, modern interface
 - 📝 Create and manage tasks with titles and descriptions
 - 📅 Set deadlines for tasks with visual countdown indicators

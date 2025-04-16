@@ -692,32 +692,108 @@ textarea.form-control {
   display: inline-block;
   font-weight: bold;
   padding: 3px 8px;
-  border-radius: 12px;
+  border-radius: 4px;
   font-size: 11px;
   line-height: 1.2;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: white;
 }
 
+/* Default styling for indicators */
 .time-remaining-indicator .hours-remaining {
   background-color: var(--urgent-color);
-  color: white;
   animation: pulse 2s infinite;
 }
 
 .time-remaining-indicator .overdue {
   background-color: var(--overdue-color);
-  color: white;
   animation: pulse 2s infinite;
 }
 
 .time-remaining-indicator .days-remaining.urgent {
   background-color: var(--warning-color);
-  color: white;
 }
 
 .time-remaining-indicator .days-remaining.normal {
   background-color: var(--normal-color);
+}
+
+/* Task-specific styling overrides */
+.task-item.overdue .hours-remaining,
+.task-item.overdue .days-remaining,
+.task-item.overdue .overdue {
+  background-color: var(--overdue-color);
+}
+
+.task-item.urgent .hours-remaining,
+.task-item.urgent .days-remaining {
+  background-color: var(--urgent-color);
+}
+
+.task-item.warning .days-remaining {
+  background-color: var(--warning-color);
+}
+
+.task-item.normal .days-remaining {
+  background-color: var(--normal-color);
+}
+
+.task-item.no-deadline .days-remaining {
+  background-color: var(--no-deadline-color);
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.task-item.completed .time-remaining-indicator {
+  display: none;
+}
+
+/* Styling for deadline time in time remaining indicator */
+.deadline-time {
+  display: inline-block;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-left: 5px;
+  font-size: 11px;
+  line-height: 1.2;
+  background-color: #607d8b;
   color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.task-item.overdue .deadline-time {
+  background-color: var(--overdue-color);
+}
+
+.task-item.urgent .deadline-time {
+  background-color: var(--urgent-color);
+}
+
+.task-item.warning .deadline-time {
+  background-color: var(--warning-color);
+}
+
+.task-item.normal .deadline-time {
+  background-color: var(--normal-color);
+}
+
+.task-item.no-deadline .deadline-time {
+  background-color: var(--no-deadline-color);
+}
+
+.task-item.completed .deadline-time {
+  background-color: var(--completed-color);
 }
 
 /* Add styles for the header buttons container */
@@ -853,17 +929,8 @@ textarea.form-control {
   display: none;
 }
 
-/* Styling for deadline time in time remaining indicator */
 .deadline-time {
-  display: inline-block;
-  font-size: 0.8em;
+  border-radius: 4px;
+  padding: 3px 8px;
   margin-left: 5px;
-  opacity: 0.8;
-  color: #333;
-  font-style: italic;
-}
-
-.overdue + .deadline-time {
-  color: #fff;
-  opacity: 0.9;
 } 
